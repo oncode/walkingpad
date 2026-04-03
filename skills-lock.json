@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "skills": {
+    "clean-code": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "c2b1dc6c2490860ff92005b2369057c77c36fa90e866116b8da5c09e9b997da1"
+    },
+    "hooked-ux": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "21071166f94d9ec8ff063eccde279124767662a029161629f4b1250de0a7a499"
+    },
+    "improve-retention": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "2e10f0bb2d08515e2216c6aa07050c158f5bdb1019aa1faaf75c39476be623ac"
+    },
+    "lean-ux": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "72bfd885bae4d490d36bfe9a1117ea618a3d7a9386eb603177aeff3d1c52d490"
+    },
+    "microinteractions": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "efd849fc74c68b851120ae9e89fe76da3bf89311a564f48ea296e09d62ad64c1"
+    },
+    "pragmatic-programmer": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "1076a3ba9b1ae50d6c87d58959777bcf1342d09dc192b54a56e55ce8d6f77565"
+    },
+    "refactoring-patterns": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "db96f6f1953645be6d318aeef537e239ee496e80b5f96cc5884fec9b93c47f7a"
+    },
+    "refactoring-ui": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "cdf42009a0eec7fa9b0174a8f5de234bd1d6fe25ec81cb6cdcf7866ad74f9909"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "computedHash": "507f011a70e8b3ae242bdc0bb5b39fd91a1d4049a0f3c281991ccf84973d591c"
+    },
+    "software-design-philosophy": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "3c1501694f474624974d53247ec3a72ded98c32050ddd56b1406c9470bbf9eb7"
+    },
+    "top-design": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "cca887bdf89eb2cefe38e5bd6b9ef11d8e16d85b677676bb9b679d1aaa4c8038"
+    },
+    "ux-heuristics": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "247932fa41630006ddce6f50a8795633c816e4acc3635be2939a1459c9e3a975"
+    },
+    "web-typography": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "154c59a8ef89a5f47127eec776cf46a7d00e6ae331bc2ac407b395b819589017"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-// BLE service and characteristic UUIDs for the WalkingPad A1 Pro
+// BLE service and characteristic UUIDs for the Kingsmith WalkingPad (A1 Pro)
 export const BLE_SERVICE_UUID = "0000fe00-0000-1000-8000-00805f9b34fb";
 export const BLE_WRITE_UUID = "0000fe02-0000-1000-8000-00805f9b34fb";
 export const BLE_NOTIFY_UUID = "0000fe01-0000-1000-8000-00805f9b34fb";
@@ -51,6 +51,35 @@ export function encodeSetSpeed(kmh: number): Uint8Array {
 // manual=1, auto(automatic)=0
 export function encodeSetMode(mode: "manual" | "auto"): Uint8Array {
   return buildCmd(0x02, mode === "auto" ? 0x00 : 0x01);
+}
+
+/**
+ * Auto-mode sensitivity: how quickly the belt reacts to walking speed changes.
+ * 1 = high (most reactive), 2 = medium, 3 = low (least reactive)
+ */
+export type AutoSensitivity = 1 | 2 | 3;
+
+export const SENSITIVITY_LABELS: Record<AutoSensitivity, string> = {
+  1: "High",
+  2: "Medium",
+  3: "Low",
+};
+
+/**
+ * Preference packet format (distinct from the regular 6-byte command packet):
+ *   [0xf7, 0xa6, key, stype=0x00, val_hi, val_mid, val_lo, checksum, 0xfd]
+ *   checksum = sum(bytes[1..-2]) % 256
+ * PREFS_SENSITIVITY key = 0x06
+ */
+function buildPrefCmd(key: number, value: number): Uint8Array {
+  const bytes = [0xa6, key & 0xff, 0x00, 0x00, 0x00, value & 0xff];
+  const checksum = bytes.reduce((acc, b) => (acc + b) & 0xff, 0);
+  return new Uint8Array([0xf7, ...bytes, checksum, 0xfd]);
+}
+
+/** Set auto-mode sensitivity. Only has effect when in auto mode. */
+export function encodeSetSensitivity(level: AutoSensitivity): Uint8Array {
+  return buildPrefCmd(0x06, level);
 }
 
 /**

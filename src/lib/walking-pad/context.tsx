@@ -6,10 +6,12 @@ import {
   BLE_SERVICE_UUID,
   BLE_WRITE_UUID,
   DEFAULT_STATS,
+  type AutoSensitivity,
   type WalkingPadStats,
   buildStatsRequest,
   decodeNotification,
   encodeSetMode,
+  encodeSetSensitivity,
   encodeSetSpeed,
   encodeStart,
   encodeStop,
@@ -22,6 +24,7 @@ type WalkingPadContextValue = {
   status: ConnectionStatus;
   isRunning: boolean;
   mode: PadMode;
+  sensitivity: AutoSensitivity;
   stats: WalkingPadStats;
   connect: () => Promise<void>;
   disconnect: () => void;
@@ -29,6 +32,7 @@ type WalkingPadContextValue = {
   stop: () => Promise<void>;
   setSpeed: (kmh: number) => Promise<void>;
   setMode: (mode: PadMode) => Promise<void>;
+  setSensitivity: (level: AutoSensitivity) => Promise<void>;
 };
 
 const WalkingPadContext = createContext<WalkingPadContextValue | null>(null);
@@ -36,6 +40,7 @@ const WalkingPadContext = createContext<WalkingPadContextValue | null>(null);
 export function WalkingPadProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<ConnectionStatus>("disconnected");
   const [mode, setModeState] = useState<PadMode>("manual");
+  const [sensitivity, setSensitivityState] = useState<AutoSensitivity>(2);
   const [stats, setStats] = useState<WalkingPadStats>(DEFAULT_STATS);
 
   const writeCharRef = useRef<BluetoothRemoteGATTCharacteristic | null>(null);
@@ -80,6 +85,7 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     deviceRef.current = null;
     setStatus("disconnected");
     setModeState("manual");
+    setSensitivityState(2);
     setStats(DEFAULT_STATS);
     if (!intentionalDisconnectRef.current) {
       toast.error("Device disconnected");
@@ -184,12 +190,21 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     [writeCmd],
   );
 
+  const setSensitivity = useCallback(
+    async (level: AutoSensitivity) => {
+      const ok = await writeCmd(encodeSetSensitivity(level));
+      if (ok) setSensitivityState(level);
+    },
+    [writeCmd],
+  );
+
   return (
     <WalkingPadContext.Provider
       value={{
         status,
         isRunning: stats.beltStatus === "running",
         mode,
+        sensitivity,
         stats,
         connect,
         disconnect,
@@ -197,6 +212,7 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
         stop,
         setSpeed,
         setMode,
+        setSensitivity,
       }}
     >
       {children}

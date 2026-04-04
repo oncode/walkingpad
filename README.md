@@ -1,4 +1,6 @@
-# treadmill
+# walkingpad
+
+Web UI for managing a KingSmith walking pad. Built on a full-stack React 19 + TanStack Start scaffold, with Drizzle ORM, shadcn/ui, and Better Auth.
 
 This project was scaffolded with [`create-mugnavo`](https://github.com/mugnavo/create-mugnavo).
 

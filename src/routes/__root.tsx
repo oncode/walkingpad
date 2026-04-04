@@ -30,11 +30,11 @@ export const Route = createRootRouteWithContext<{
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "treadmill",
+        title: "Walking Pad Dashboard",
       },
       {
         name: "description",
-        content: "A TanStack Start project scaffolded with create-mugnavo.",
+        content: "Walking Pad Dashboard for stats and settings",
       },
     ],
     links: [

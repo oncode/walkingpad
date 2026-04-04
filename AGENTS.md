@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Web UI for managing a KingSmith treadmill. Built on a full-stack React 19 + TanStack Start scaffold, with Drizzle ORM, shadcn/ui, and Better Auth.
+Web UI for managing a KingSmith walking pad. Built on a full-stack React 19 + TanStack Start scaffold, with Drizzle ORM, shadcn/ui, and Better Auth.
 
 ## Commands
 

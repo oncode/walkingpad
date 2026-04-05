@@ -69,6 +69,8 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const handleDisconnect = useCallback(() => {
+    if (!deviceRef.current) return;
+
     if (pollIntervalRef.current) {
       clearInterval(pollIntervalRef.current);
       pollIntervalRef.current = null;
@@ -81,8 +83,11 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
       notifyCharRef.current = null;
       notifyListenerRef.current = null;
     }
+    if (deviceRef.current) {
+      deviceRef.current.removeEventListener("gattserverdisconnected", handleDisconnect);
+      deviceRef.current = null;
+    }
     writeCharRef.current = null;
-    deviceRef.current = null;
     setStatus("disconnected");
     setModeState("manual");
     setSensitivityState(2);

@@ -42,7 +42,7 @@ function DisconnectedView() {
         <div className="flex flex-col items-center gap-3 text-center">
           <h1 className="text-3xl font-bold tracking-tighter text-foreground">WalkingPad</h1>
           <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase opacity-80">
-            Studio Interface
+            Dashboard
           </p>
         </div>
         <button
@@ -51,7 +51,7 @@ function DisconnectedView() {
           className="group relative mt-4 inline-flex h-14 w-full items-center justify-center overflow-hidden rounded-lg bg-primary px-8 font-bold tracking-widest text-primary-foreground uppercase transition-all duration-700 ease-expo hover:scale-[1.02] hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background active:scale-95 disabled:pointer-events-none disabled:scale-100 disabled:opacity-50"
         >
           <span className="relative flex items-center gap-2">
-            {isConnecting ? "Establishing Link..." : "Initialize"}
+            {isConnecting ? "Establishing Link..." : "Connect"}
           </span>
         </button>
       </div>

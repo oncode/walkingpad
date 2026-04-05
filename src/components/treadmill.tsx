@@ -175,7 +175,7 @@ function ConnectedView() {
             <span className="relative inline-flex size-full rounded-full bg-primary shadow-[0_0_15px_var(--color-primary)]"></span>
           </div>
           <span className="pt-0.5 text-[11px] font-bold tracking-[0.25em] text-muted-foreground uppercase">
-            KingSmith A1 Pro
+            WalkingPad
           </span>
         </div>
         <button

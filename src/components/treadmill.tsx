@@ -187,7 +187,7 @@ function ConnectedView() {
       </header>
 
       {/* Main Display: Typographic Hero */}
-      <main className="relative flex flex-1 flex-col justify-center overflow-hidden px-6 py-12 lg:px-12">
+      <main className="relative flex flex-1 flex-col justify-center overflow-hidden px-4 py-8 lg:px-12 lg:py-12">
         {/* Subtle background glow attached to the speed to ground it */}
         <div
           className={cn(
@@ -209,7 +209,7 @@ function ConnectedView() {
             <button
               onClick={handleSpeedDown}
               disabled={targetSpeed <= 0.5 || mode === "auto"}
-              className="group flex size-24 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 lg:size-32"
+              className="group flex size-16 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 md:size-24 lg:size-32"
             >
               <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">
                 −
@@ -229,12 +229,12 @@ function ConnectedView() {
             </div>
 
             {/* Start/Stop primary action */}
-            <div className="mt-24 w-full min-w-[200px] lg:min-w-[240px]">
+            <div className="mt-14 flex w-full justify-center lg:mt-24">
               <button
                 onClick={handleStartStop}
                 disabled={isPending || isCountdown(beltStatus)}
                 className={cn(
-                  "relative flex h-16 w-full transform items-center justify-center overflow-hidden rounded-xl font-bold tracking-[0.2em] uppercase transition-all duration-700 ease-quart hover:scale-[1.02] focus:ring-2 focus:ring-primary focus:ring-offset-4 focus:ring-offset-background focus:outline-none active:scale-95",
+                  "relative flex h-14 w-auto min-w-[200px] transform items-center justify-center overflow-hidden rounded-xl px-8 font-bold tracking-[0.2em] uppercase transition-all duration-700 ease-quart hover:scale-[1.02] focus:ring-2 focus:ring-primary focus:ring-offset-4 focus:ring-offset-background focus:outline-none active:scale-95 lg:h-16 lg:px-12",
                   isRunning
                     ? "border border-border bg-secondary text-foreground hover:border-white/10 hover:bg-secondary/80"
                     : isCountdown(beltStatus)
@@ -275,7 +275,7 @@ function ConnectedView() {
             <button
               onClick={handleSpeedUp}
               disabled={targetSpeed >= 6.0 || mode === "auto"}
-              className="group flex size-24 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 lg:size-32"
+              className="group flex size-16 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 md:size-24 lg:size-32"
             >
               <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">
                 +
@@ -286,9 +286,9 @@ function ConnectedView() {
       </main>
 
       {/* Auxiliary Stats Layer (Asymmetric Grid) */}
-      <footer className="grid w-full grid-cols-2 gap-y-12 border-t border-white/3 px-6 py-12 md:grid-cols-4 lg:px-12">
+      <footer className="grid w-full grid-cols-2 gap-y-8 border-t border-white/3 px-6 py-8 md:grid-cols-4 lg:gap-y-12 lg:px-12 lg:py-12">
         {/* Modals & Settings */}
-        <div className="col-span-2 flex flex-col justify-end gap-10 md:col-span-1 md:pr-12">
+        <div className="col-span-2 flex flex-col justify-end gap-8 md:col-span-1 md:pr-12 lg:gap-10">
           <div className="flex flex-col gap-4">
             <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
               Control Mode

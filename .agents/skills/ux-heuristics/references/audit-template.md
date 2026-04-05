@@ -6,11 +6,11 @@ Structured template for conducting heuristic evaluations. Use this to systematic
 
 ## Audit Information
 
-**Product/Feature:** ******\_\_\_\_******
-**Auditor:** ******\_\_\_\_******
-**Date:** ******\_\_\_\_******
-**Page/Screen:** ******\_\_\_\_******
-**User Context:** ******\_\_\_\_****** (who is using this, what's their goal?)
+**Product/Feature:** **\*\***\_\_\_\_**\*\***
+**Auditor:** **\*\***\_\_\_\_**\*\***
+**Date:** **\*\***\_\_\_\_**\*\***
+**Page/Screen:** **\*\***\_\_\_\_**\*\***
+**User Context:** **\*\***\_\_\_\_**\*\*** (who is using this, what's their goal?)
 
 ---
 
@@ -203,7 +203,7 @@ Structured template for conducting heuristic evaluations. Use this to systematic
 
 Test specific user tasks and note where issues occur.
 
-### Task 1: ******\_\_\_\_******
+### Task 1: **\*\***\_\_\_\_**\*\***
 
 | Step | Expected | Actual | Issue | Severity |
 | ---- | -------- | ------ | ----- | -------- |
@@ -211,7 +211,7 @@ Test specific user tasks and note where issues occur.
 | 2    |          |        |       |          |
 | 3    |          |        |       |          |
 
-### Task 2: ******\_\_\_\_******
+### Task 2: **\*\***\_\_\_\_**\*\***
 
 | Step | Expected | Actual | Issue | Severity |
 | ---- | -------- | ------ | ----- | -------- |

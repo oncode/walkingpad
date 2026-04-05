@@ -5,12 +5,15 @@ export const BLE_NOTIFY_UUID = "0000fe01-0000-1000-8000-00805f9b34fb";
 
 export type BeltStatus = "running" | "stopped" | "countdown-3" | "countdown-2" | "countdown-1";
 
+export type PadMode = "manual" | "auto" | "standby";
+
 export type WalkingPadStats = {
   speed: number; // km/h
   time: number; // seconds elapsed
   steps: number;
   distance: number; // km
   beltStatus: BeltStatus;
+  mode?: PadMode;
 };
 
 export const DEFAULT_STATS: WalkingPadStats = {
@@ -48,9 +51,14 @@ export function encodeSetSpeed(kmh: number): Uint8Array {
   return buildCmd(0x01, raw);
 }
 
-// manual=1, auto(automatic)=0
-export function encodeSetMode(mode: "manual" | "auto"): Uint8Array {
-  return buildCmd(0x02, mode === "auto" ? 0x00 : 0x01);
+// manual=1, auto(automatic)=0, standby=2
+export function encodeSetMode(mode: PadMode): Uint8Array {
+  const modeValues = {
+    auto: 0x00,
+    manual: 0x01,
+    standby: 0x02,
+  };
+  return buildCmd(0x02, modeValues[mode] ?? 0x01);
 }
 
 /**
@@ -103,6 +111,7 @@ export function decodeNotification(data: DataView): WalkingPadStats | null {
 
   const beltState = data.getUint8(2);
   const speedRaw = data.getUint8(3);
+  const manualModeRaw = data.getUint8(4);
 
   const time = (data.getUint8(5) << 16) | (data.getUint8(6) << 8) | data.getUint8(7);
   const distance = (data.getUint8(8) << 16) | (data.getUint8(9) << 8) | data.getUint8(10);
@@ -110,12 +119,17 @@ export function decodeNotification(data: DataView): WalkingPadStats | null {
 
   const beltStatus = beltStateToStatus(beltState);
 
+  let mode: PadMode = "manual";
+  if (manualModeRaw === 0) mode = "auto";
+  else if (manualModeRaw === 2) mode = "standby";
+
   return {
     beltStatus,
     speed: speedRaw * 0.1,
     steps,
     time,
     distance: distance / 100,
+    mode,
   };
 }
 

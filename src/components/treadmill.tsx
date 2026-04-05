@@ -159,6 +159,10 @@ function ConnectedView() {
     if (isCountdown(beltStatus)) return;
     setIsPending(true);
     try {
+      if (!isRunning && mode === "standby") {
+        await setMode("manual");
+        await new Promise((r) => setTimeout(r, 1000));
+      }
       await (isRunning ? stop() : start());
     } finally {
       setIsPending(false);
@@ -171,8 +175,20 @@ function ConnectedView() {
       <header className="flex w-full items-center justify-between p-6 lg:p-10">
         <div className="flex items-center gap-4">
           <div className="relative flex size-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60"></span>
-            <span className="relative inline-flex size-full rounded-full bg-primary shadow-[0_0_15px_var(--color-primary)]"></span>
+            <span
+              className={cn(
+                "absolute inline-flex h-full w-full animate-ping rounded-full opacity-60",
+                mode === "standby" ? "bg-orange-500" : "bg-primary",
+              )}
+            ></span>
+            <span
+              className={cn(
+                "relative inline-flex size-full rounded-full",
+                mode === "standby"
+                  ? "bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,1)]"
+                  : "bg-primary shadow-[0_0_15px_var(--color-primary)]",
+              )}
+            ></span>
           </div>
           <span className="pt-0.5 text-[11px] font-bold tracking-[0.25em] text-muted-foreground uppercase">
             WalkingPad
@@ -201,14 +217,14 @@ function ConnectedView() {
           <div
             className={cn(
               "flex flex-1 justify-start transition-all duration-700 ease-expo",
-              mode === "auto"
+              mode === "auto" || mode === "standby"
                 ? "pointer-events-none -translate-x-8 opacity-0"
                 : "translate-x-0 opacity-100",
             )}
           >
             <button
               onClick={handleSpeedDown}
-              disabled={targetSpeed <= 0.5 || mode === "auto"}
+              disabled={targetSpeed <= 0.5 || mode === "auto" || mode === "standby"}
               className="group flex size-16 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 md:size-24 lg:size-32"
             >
               <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">
@@ -239,7 +255,9 @@ function ConnectedView() {
                     ? "border border-border bg-secondary text-foreground hover:border-white/10 hover:bg-secondary/80"
                     : isCountdown(beltStatus)
                       ? "scale-100 cursor-not-allowed bg-secondary/50 text-muted-foreground hover:scale-100"
-                      : "bg-primary text-primary-foreground shadow-[0_0_50px_-15px_var(--color-primary)] hover:shadow-[0_0_70px_-10px_var(--color-primary)]",
+                      : mode === "standby"
+                        ? "bg-orange-500 text-white shadow-[0_0_50px_-15px_rgba(249,115,22,1)] hover:shadow-[0_0_70px_-10px_rgba(249,115,22,1)]"
+                        : "bg-primary text-primary-foreground shadow-[0_0_50px_-15px_var(--color-primary)] hover:shadow-[0_0_70px_-10px_var(--color-primary)]",
                 )}
               >
                 <div className="relative flex items-center gap-3">
@@ -267,14 +285,14 @@ function ConnectedView() {
           <div
             className={cn(
               "flex flex-1 justify-end transition-all duration-700 ease-expo",
-              mode === "auto"
+              mode === "auto" || mode === "standby"
                 ? "pointer-events-none translate-x-8 opacity-0"
                 : "translate-x-0 opacity-100",
             )}
           >
             <button
               onClick={handleSpeedUp}
-              disabled={targetSpeed >= 6.0 || mode === "auto"}
+              disabled={targetSpeed >= 6.0 || mode === "auto" || mode === "standby"}
               className="group flex size-16 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 md:size-24 lg:size-32"
             >
               <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">
@@ -294,6 +312,17 @@ function ConnectedView() {
               Control Mode
             </span>
             <div className="flex gap-6">
+              <button
+                className={cn(
+                  "text-xs font-bold tracking-[0.15em] uppercase transition-colors duration-500",
+                  mode === "standby"
+                    ? "text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+                onClick={() => setMode("standby")}
+              >
+                Standby
+              </button>
               <button
                 className={cn(
                   "text-xs font-bold tracking-[0.15em] uppercase transition-colors duration-500",

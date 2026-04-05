@@ -7,6 +7,7 @@ import {
   BLE_WRITE_UUID,
   DEFAULT_STATS,
   type AutoSensitivity,
+  type PadMode,
   type WalkingPadStats,
   buildStatsRequest,
   decodeNotification,
@@ -18,7 +19,6 @@ import {
 } from "./protocol";
 
 export type ConnectionStatus = "disconnected" | "connecting" | "connected";
-export type PadMode = "manual" | "auto";
 
 type WalkingPadContextValue = {
   status: ConnectionStatus;
@@ -39,7 +39,7 @@ const WalkingPadContext = createContext<WalkingPadContextValue | null>(null);
 
 export function WalkingPadProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<ConnectionStatus>("disconnected");
-  const [mode, setModeState] = useState<PadMode>("manual");
+  const [mode, setModeState] = useState<PadMode>("standby");
   const [sensitivity, setSensitivityState] = useState<AutoSensitivity>(2);
   const [stats, setStats] = useState<WalkingPadStats>(DEFAULT_STATS);
 
@@ -89,7 +89,7 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     }
     writeCharRef.current = null;
     setStatus("disconnected");
-    setModeState("manual");
+    setModeState("standby");
     setSensitivityState(2);
     setStats(DEFAULT_STATS);
     if (!intentionalDisconnectRef.current) {
@@ -127,6 +127,11 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
         if (!char.value) return;
         const decoded = decodeNotification(char.value);
         if (!decoded) return;
+
+        if (decoded.mode) {
+          setModeState((prev) => (prev !== decoded.mode ? decoded.mode! : prev));
+        }
+
         setStats((prev) =>
           prev.beltStatus === decoded.beltStatus &&
           prev.speed === decoded.speed &&

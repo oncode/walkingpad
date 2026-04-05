@@ -1,7 +1,6 @@
-import { RiBluetoothLine, RiLoader4Line, RiScales3Line, RiWifiOffLine } from "@remixicon/react";
+import { RiBluetoothLine, RiLoader4Line } from "@remixicon/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { WalkingPadProvider, useWalkingPad } from "@/lib/walking-pad/context";
 import { SENSITIVITY_LABELS, countdownLabel, isCountdown } from "@/lib/walking-pad/protocol";
@@ -9,9 +8,11 @@ import type { AutoSensitivity } from "@/lib/walking-pad/protocol";
 
 export function Treadmill() {
   return (
-    <WalkingPadProvider>
-      <TreadmillDashboard />
-    </WalkingPadProvider>
+    <div className="min-h-screen bg-background font-sans text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
+      <WalkingPadProvider>
+        <TreadmillDashboard />
+      </WalkingPadProvider>
+    </div>
   );
 }
 
@@ -26,33 +27,40 @@ function DisconnectedView() {
   const isConnecting = status === "connecting";
 
   return (
-    <div className="flex min-h-64 flex-col items-center justify-center gap-4">
-      <div className="flex flex-col items-center gap-1">
-        <RiBluetoothLine className="size-10 text-muted-foreground" />
-        <p className="text-sm font-medium">WalkingPad</p>
-        <p className="text-xs text-muted-foreground">Not connected</p>
+    <div className="flex min-h-screen w-full flex-col items-center justify-center p-6">
+      <div className="flex w-full max-w-sm flex-col items-center gap-8 rounded-2xl border border-white/5 bg-secondary/20 p-12 shadow-2xl backdrop-blur-3xl">
+        <div className="relative">
+          <div className="absolute inset-0 size-24 rounded-full bg-primary/20 blur-2xl"></div>
+          <div className="relative flex size-24 items-center justify-center rounded-full border border-white/10 bg-background shadow-inner">
+            {isConnecting ? (
+              <RiLoader4Line className="size-10 animate-spin text-primary" />
+            ) : (
+              <RiBluetoothLine className="size-10 text-primary" />
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-3 text-center">
+          <h1 className="text-3xl font-bold tracking-tighter text-foreground">WalkingPad</h1>
+          <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase opacity-80">
+            Studio Interface
+          </p>
+        </div>
+        <button
+          onClick={connect}
+          disabled={isConnecting}
+          className="group relative mt-4 inline-flex h-14 w-full items-center justify-center overflow-hidden rounded-lg bg-primary px-8 font-bold tracking-widest text-primary-foreground uppercase transition-all duration-700 ease-expo hover:scale-[1.02] hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background active:scale-95 disabled:pointer-events-none disabled:scale-100 disabled:opacity-50"
+        >
+          <span className="relative flex items-center gap-2">
+            {isConnecting ? "Establishing Link..." : "Initialize"}
+          </span>
+        </button>
       </div>
-      <Button onClick={connect} disabled={isConnecting} className="gap-2">
-        {isConnecting ? (
-          <>
-            <RiLoader4Line className="size-4 animate-spin" />
-            Connecting…
-          </>
-        ) : (
-          <>
-            <RiBluetoothLine className="size-4" />
-            Connect
-          </>
-        )}
-      </Button>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
 // Calorie calculation — ported from ph4-walkingpad/profile.py
-// Source: http://www.shapesense.com/fitness-exercise/calculators/walking-calorie-burn-calculator.shtml
-// Valid for speeds in range 1–7.5 km/h, flat surface (deg = 0)
 // ---------------------------------------------------------------------------
 const CALORIE_SPEED_MATRIX = [
   [0.0251, -0.2157, 0.7888, 1.2957],
@@ -68,24 +76,13 @@ const CALORIE_SPEED_MATRIX = [
   [0.0221, -0.1349, 0.8025, 2.1],
 ];
 
-/**
- * Gross kcal/min burned while walking at `speed` km/h for a person
- * weighing `weightKg` kg, on a flat surface.
- * Polynomial coefficients sourced from the ph4-walkingpad project (profile.py).
- */
 function caloriesWalkPerMinute(speedKmh: number, weightKg: number): number {
   const s = Math.max(1, Math.min(7.5, speedKmh));
-  // Matrix row: elevation deg=0 → index = clamp(round(0 + 5), 0, 10) = 5
   const row = CALORIE_SPEED_MATRIX[5];
   const raw = row[0] * s ** 3 + row[1] * s ** 2 + row[2] * s + row[3];
   return (raw / 60) * weightKg;
 }
 
-/**
- * Total gross kcal for a session using the ph4 formula.
- * Since we have distance + time but not a per-segment speed breakdown,
- * we use average speed (distance / time) as a reasonable single-MET estimate.
- */
 function calculateCalories(timeSeconds: number, distanceKm: number, weightKg: number): number {
   if (timeSeconds <= 0 || distanceKm <= 0 || weightKg <= 0) return 0;
   const avgSpeedKmh = distanceKm / (timeSeconds / 3600);
@@ -122,75 +119,6 @@ function formatTime(seconds: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function SpeedGauge({ speed }: { speed: number }) {
-  const r = 40;
-  const cx = 50;
-  const cy = 52;
-  const circumference = 2 * Math.PI * r; // ≈ 251.3
-  const arcLength = circumference * 0.75; // 270° arc ≈ 188.5
-  const fraction = Math.max(0, Math.min(1, (speed - 0.5) / (6.0 - 0.5)));
-  const fillLength = arcLength * fraction;
-
-  // rotate(135) moves the stroke start to ~7:30 o'clock (bottom-left),
-  // producing a symmetric 270° arc with a 90° gap at the bottom.
-  return (
-    <svg
-      viewBox="0 0 100 110"
-      className="h-full w-full"
-      role="img"
-      aria-label={`Speed: ${speed.toFixed(1)} km/h`}
-    >
-      <circle
-        cx={cx}
-        cy={cy}
-        r={r}
-        fill="none"
-        strokeWidth="8"
-        className="stroke-muted"
-        strokeDasharray={`${arcLength} ${circumference - arcLength}`}
-        strokeLinecap="round"
-        transform={`rotate(135 ${cx} ${cy})`}
-      />
-      {fraction > 0 && (
-        <circle
-          cx={cx}
-          cy={cy}
-          r={r}
-          fill="none"
-          strokeWidth="8"
-          className="stroke-primary transition-all duration-300"
-          strokeDasharray={`${fillLength} ${circumference - fillLength}`}
-          strokeLinecap="round"
-          transform={`rotate(135 ${cx} ${cy})`}
-        />
-      )}
-      <text
-        x={cx}
-        y={cy + 2}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        className="fill-foreground"
-        fontSize="18"
-        fontWeight="700"
-      >
-        {speed.toFixed(1)}
-      </text>
-      <text x={cx} y={cy + 16} textAnchor="middle" className="fill-muted-foreground" fontSize="9">
-        km/h
-      </text>
-    </svg>
-  );
-}
-
-function StatCell({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5 rounded-md bg-muted/50 px-2 py-2">
-      <span className="text-sm font-semibold tabular-nums">{value}</span>
-      <span className="text-[10px] text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
 function ConnectedView() {
   const { stats, mode, sensitivity, disconnect, start, stop, setSpeed, setMode, setSensitivity } =
     useWalkingPad();
@@ -202,8 +130,6 @@ function ConnectedView() {
   const isRunning = beltStatus === "running";
   const calories = calculateCalories(stats.time, stats.distance, bodyWeight);
 
-  // Optimistic speed: track the last-commanded speed locally so rapid
-  // +/− clicks accumulate correctly without waiting for device confirmation.
   const [targetSpeed, setTargetSpeed] = useState(stats.speed);
   const lastCmdTimeRef = useRef(0);
 
@@ -240,162 +166,247 @@ function ConnectedView() {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4">
+    <div className="flex min-h-screen w-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-green-500" />
-          <span className="text-sm font-medium">WalkingPad</span>
+      <header className="flex w-full items-center justify-between p-6 lg:p-10">
+        <div className="flex items-center gap-4">
+          <div className="relative flex size-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60"></span>
+            <span className="relative inline-flex size-full rounded-full bg-primary shadow-[0_0_15px_var(--color-primary)]"></span>
+          </div>
+          <span className="pt-0.5 text-[11px] font-bold tracking-[0.25em] text-muted-foreground uppercase">
+            KingSmith A1 Pro
+          </span>
         </div>
-        <Button variant="ghost" size="sm" onClick={disconnect} className="gap-1.5 text-xs">
-          <RiWifiOffLine className="size-3.5" />
+        <button
+          onClick={disconnect}
+          className="pt-0.5 text-[11px] font-bold tracking-[0.2em] text-muted-foreground uppercase transition-colors duration-500 hover:text-foreground"
+        >
           Disconnect
-        </Button>
-      </div>
+        </button>
+      </header>
 
-      {/* Gauge + Stats */}
-      <div className="flex items-center gap-3">
-        <div className="w-28 shrink-0">
-          <SpeedGauge speed={stats.speed} />
-        </div>
-        <div className="grid flex-1 grid-cols-2 gap-1.5">
-          <StatCell label="time" value={formatTime(stats.time)} />
-          <StatCell label="steps" value={stats.steps.toLocaleString()} />
-          <StatCell label="distance" value={`${stats.distance.toFixed(2)} km`} />
-          <StatCell label="calories" value={`${calories} kcal`} />
-        </div>
-      </div>
+      {/* Main Display: Typographic Hero */}
+      <main className="relative flex flex-1 flex-col justify-center overflow-hidden px-6 py-12 lg:px-12">
+        {/* Subtle background glow attached to the speed to ground it */}
+        <div
+          className={cn(
+            "absolute top-1/2 left-1/2 h-[50vh] w-[50vw] -translate-x-1/2 -translate-y-1/2 rounded-[100%] blur-[120px] transition-opacity duration-1000",
+            isRunning ? "pointer-events-none bg-primary opacity-15" : "opacity-0",
+          )}
+        ></div>
 
-      {/* Body weight input */}
-      <div className="flex items-center gap-2 rounded-md border px-3 py-1.5">
-        <RiScales3Line className="size-3.5 shrink-0 text-muted-foreground" />
-        <span className="flex-1 text-xs text-muted-foreground">Body weight</span>
-        <input
-          type="number"
-          min={20}
-          max={300}
-          step={0.5}
-          value={weightInput}
-          onChange={(e) => setWeightInput(e.target.value)}
-          onBlur={() => {
-            const kg = parseFloat(weightInput);
-            if (Number.isFinite(kg) && kg >= 20 && kg <= 300) {
-              setBodyWeight(kg);
-            } else {
-              setWeightInput(String(bodyWeight));
-            }
-          }}
-          className="w-16 bg-transparent text-right text-sm font-semibold tabular-nums outline-none"
-        />
-        <span className="text-xs text-muted-foreground">kg</span>
-      </div>
-
-      {/* Mode toggle */}
-      <div className="flex flex-col gap-1">
-        <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-          Mode
-        </span>
-        <div className="flex overflow-hidden rounded-md border">
-          <button
-            type="button"
+        <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between">
+          {/* Minus Button */}
+          <div
             className={cn(
-              "flex-1 py-1.5 text-xs font-medium transition-colors",
-              mode === "manual" ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+              "flex flex-1 justify-start transition-all duration-700 ease-expo",
+              mode === "auto"
+                ? "pointer-events-none -translate-x-8 opacity-0"
+                : "translate-x-0 opacity-100",
             )}
-            onClick={() => setMode("manual")}
           >
-            Manual
-          </button>
-          <button
-            type="button"
-            className={cn(
-              "flex-1 py-1.5 text-xs font-medium transition-colors",
-              mode === "auto" ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-            )}
-            onClick={() => setMode("auto")}
-          >
-            Auto
-          </button>
-        </div>
-      </div>
-
-      {/* Sensitivity — only active / visible in auto mode */}
-      {mode === "auto" && (
-        <div className="flex flex-col gap-1 transition-opacity">
-          <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-            Sensitivity
-          </span>
-          <div className="flex overflow-hidden rounded-md border">
-            {([1, 2, 3] as AutoSensitivity[]).map((level) => (
-              <button
-                key={level}
-                type="button"
-                className={cn(
-                  "flex-1 py-1.5 text-xs font-medium transition-colors",
-                  sensitivity === level ? "bg-primary text-primary-foreground" : "hover:bg-muted",
-                )}
-                onClick={() => setSensitivity(level)}
-              >
-                {SENSITIVITY_LABELS[level]}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Speed controls — disabled in auto mode */}
-      {mode === "manual" && (
-        <div className="flex flex-col gap-1 transition-opacity">
-          <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-            Speed
-          </span>
-          <div className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={handleSpeedDown}
-              disabled={targetSpeed <= 0.5}
-              className="size-8 p-0 text-lg font-bold"
+              disabled={targetSpeed <= 0.5 || mode === "auto"}
+              className="group flex size-24 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 lg:size-32"
             >
-              −
-            </Button>
-            <span className="min-w-14 text-center text-sm font-semibold tabular-nums">
-              {targetSpeed.toFixed(1)} km/h
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
+              <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">
+                −
+              </span>
+            </button>
+          </div>
+
+          {/* Speed Number */}
+          <div className="flex shrink-0 flex-col items-center">
+            <div className="relative flex flex-col items-center">
+              <span className="text-[25vw] leading-[0.8] font-medium tracking-tighter text-foreground tabular-nums sm:text-[22vw] md:text-[20vw]">
+                {targetSpeed.toFixed(1)}
+              </span>
+              <span className="absolute -bottom-8 inline-block text-sm font-bold tracking-[0.25em] text-muted-foreground uppercase opacity-80 lg:text-base">
+                km/h
+              </span>
+            </div>
+
+            {/* Start/Stop primary action */}
+            <div className="mt-24 w-full min-w-[200px] lg:min-w-[240px]">
+              <button
+                onClick={handleStartStop}
+                disabled={isPending || isCountdown(beltStatus)}
+                className={cn(
+                  "relative flex h-16 w-full transform items-center justify-center overflow-hidden rounded-xl font-bold tracking-[0.2em] uppercase transition-all duration-700 ease-quart hover:scale-[1.02] focus:ring-2 focus:ring-primary focus:ring-offset-4 focus:ring-offset-background focus:outline-none active:scale-95",
+                  isRunning
+                    ? "border border-border bg-secondary text-foreground hover:border-white/10 hover:bg-secondary/80"
+                    : isCountdown(beltStatus)
+                      ? "scale-100 cursor-not-allowed bg-secondary/50 text-muted-foreground hover:scale-100"
+                      : "bg-primary text-primary-foreground shadow-[0_0_50px_-15px_var(--color-primary)] hover:shadow-[0_0_70px_-10px_var(--color-primary)]",
+                )}
+              >
+                <div className="relative flex items-center gap-3">
+                  {isCountdown(beltStatus) ? (
+                    <span className="text-2xl tracking-normal tabular-nums">
+                      {countdownLabel(beltStatus)}
+                    </span>
+                  ) : isRunning ? (
+                    <>
+                      <span className="block size-2 rounded-sm bg-foreground"></span>
+                      Stop Belt
+                    </>
+                  ) : (
+                    <>
+                      <span className="block h-0 w-0 border-y-4 border-l-[6px] border-y-transparent border-l-primary-foreground"></span>
+                      Start Belt
+                    </>
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Plus Button */}
+          <div
+            className={cn(
+              "flex flex-1 justify-end transition-all duration-700 ease-expo",
+              mode === "auto"
+                ? "pointer-events-none translate-x-8 opacity-0"
+                : "translate-x-0 opacity-100",
+            )}
+          >
+            <button
               onClick={handleSpeedUp}
-              disabled={targetSpeed >= 6.0}
-              className="size-8 p-0 text-lg font-bold"
+              disabled={targetSpeed >= 6.0 || mode === "auto"}
+              className="group flex size-24 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 lg:size-32"
             >
-              +
-            </Button>
+              <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">
+                +
+              </span>
+            </button>
           </div>
         </div>
-      )}
+      </main>
 
-      {/* Start / Stop */}
-      <Button
-        onClick={handleStartStop}
-        disabled={isPending || isCountdown(beltStatus)}
+      {/* Auxiliary Stats Layer (Asymmetric Grid) */}
+      <footer className="grid w-full grid-cols-2 gap-y-12 border-t border-white/3 px-6 py-12 md:grid-cols-4 lg:px-12">
+        {/* Modals & Settings */}
+        <div className="col-span-2 flex flex-col justify-end gap-10 md:col-span-1 md:pr-12">
+          <div className="flex flex-col gap-4">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+              Control Mode
+            </span>
+            <div className="flex gap-6">
+              <button
+                className={cn(
+                  "text-xs font-bold tracking-[0.15em] uppercase transition-colors duration-500",
+                  mode === "manual"
+                    ? "text-primary drop-shadow-[0_0_8px_var(--color-primary)]"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+                onClick={() => setMode("manual")}
+              >
+                Manual
+              </button>
+              <button
+                className={cn(
+                  "flex items-center gap-2 text-xs font-bold tracking-[0.15em] uppercase transition-colors duration-500",
+                  mode === "auto"
+                    ? "text-primary drop-shadow-[0_0_8px_var(--color-primary)]"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+                onClick={() => setMode("auto")}
+              >
+                Auto{" "}
+                {mode === "auto" && (
+                  <span className="inline-flex rounded-sm border border-primary/30 px-1.5 py-0.5 text-[9px] leading-none tracking-widest text-primary">
+                    {SENSITIVITY_LABELS[sensitivity]}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+              Operator Weight
+            </span>
+            <div className="group flex items-center gap-2">
+              <input
+                type="number"
+                min={20}
+                max={300}
+                step={0.5}
+                value={weightInput}
+                onChange={(e) => setWeightInput(e.target.value)}
+                onBlur={() => {
+                  const kg = parseFloat(weightInput);
+                  if (Number.isFinite(kg) && kg >= 20 && kg <= 300) setBodyWeight(kg);
+                  else setWeightInput(String(bodyWeight));
+                }}
+                className="w-16 border-b border-border bg-transparent pb-1 text-sm font-bold text-foreground tabular-nums transition-colors duration-300 outline-none focus:border-primary"
+              />
+              <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                kg
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Metric 1 */}
+        <div className="flex flex-col justify-end gap-3 md:border-l md:border-white/3 md:pl-10">
+          <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+            Time Elapsed
+          </span>
+          <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
+            {formatTime(stats.time)}
+          </span>
+        </div>
+
+        {/* Metric 2 */}
+        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-10">
+          <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+            Distance
+          </span>
+          <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
+            {stats.distance.toFixed(2)}
+            <span className="ml-2 text-xl tracking-normal text-muted-foreground">km</span>
+          </span>
+        </div>
+
+        {/* Metric 3 */}
+        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-10">
+          <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+            Energy Exerted
+          </span>
+          <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
+            {calories}
+            <span className="ml-2 text-xl tracking-normal text-muted-foreground">kcal</span>
+          </span>
+        </div>
+      </footer>
+
+      {/* Dynamic Auto Sensitivity Toggles */}
+      <div
         className={cn(
-          "w-full gap-2 font-semibold",
-          isRunning
-            ? "text-destructive-foreground bg-destructive hover:bg-destructive/90"
-            : isCountdown(beltStatus)
-              ? "bg-muted text-muted-foreground"
-              : "bg-green-600 text-white hover:bg-green-700",
+          "fixed top-24 left-1/2 z-50 flex -translate-x-1/2 gap-4 rounded-2xl border border-white/10 bg-secondary/80 p-2.5 shadow-2xl backdrop-blur-md transition-all duration-700 ease-expo",
+          mode === "auto"
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-8 opacity-0",
         )}
       >
-        {isCountdown(beltStatus) ? (
-          <span className="text-2xl font-bold tabular-nums">{countdownLabel(beltStatus)}</span>
-        ) : isRunning ? (
-          "■  Stop"
-        ) : (
-          "▶  Start"
-        )}
-      </Button>
+        {([1, 2, 3] as AutoSensitivity[]).map((level) => (
+          <button
+            key={level}
+            className={cn(
+              "rounded-xl px-6 py-2.5 text-[10px] font-bold tracking-[0.15em] uppercase transition-all duration-500 ease-quart",
+              sensitivity === level
+                ? "bg-primary text-primary-foreground shadow-[0_0_15px_var(--color-primary)]"
+                : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+            )}
+            onClick={() => setSensitivity(level)}
+          >
+            {SENSITIVITY_LABELS[level]}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

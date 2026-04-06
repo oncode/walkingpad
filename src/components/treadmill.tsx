@@ -321,10 +321,10 @@ function ConnectedView() {
         </div>
       </main>
 
-      {/* Auxiliary Stats Layer (Asymmetric Grid) */}
-      <footer className="grid w-full grid-cols-2 gap-y-8 border-t border-white/3 px-6 py-8 md:grid-cols-5 lg:gap-y-12 lg:px-12 lg:py-12">
-        {/* Modals & Settings */}
-        <div className="col-span-2 flex flex-col justify-end gap-8 md:col-span-1 md:pr-12 lg:gap-10">
+      {/* Auxiliary Stats Layer */}
+      <footer className="flex w-full flex-col gap-12 border-t border-white/3 px-6 py-8 md:gap-16 lg:px-12 lg:py-12">
+        {/* Modals & Settings Row */}
+        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between lg:gap-10">
           <div className="flex flex-col gap-4">
             <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
               Control Mode
@@ -397,46 +397,49 @@ function ConnectedView() {
           </div>
         </div>
 
-        {/* Metric 1 */}
-        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
-          <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
-            Steps
-          </span>
-          <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
-            {stats.steps}
-          </span>
-        </div>
+        {/* Metrics Grid Row */}
+        <div className="grid w-full grid-cols-2 gap-y-8 md:grid-cols-4 md:gap-y-0">
+          {/* Metric 1 */}
+          <div className="flex flex-col justify-end gap-3 md:pr-6 lg:pr-10">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+              Steps
+            </span>
+            <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
+              {stats.steps}
+            </span>
+          </div>
 
-        {/* Metric 2 */}
-        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
-          <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
-            Distance
-          </span>
-          <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
-            {stats.distance.toFixed(2)}
-            <span className="ml-2 text-xl tracking-normal text-muted-foreground">km</span>
-          </span>
-        </div>
+          {/* Metric 2 */}
+          <div className="flex flex-col justify-end gap-3 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+              Distance
+            </span>
+            <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
+              {stats.distance.toFixed(2)}
+              <span className="ml-2 text-xl tracking-normal text-muted-foreground">km</span>
+            </span>
+          </div>
 
-        {/* Metric 3 */}
-        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
-          <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
-            Time Elapsed
-          </span>
-          <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
-            {formatTime(stats.time)}
-          </span>
-        </div>
+          {/* Metric 3 */}
+          <div className="flex flex-col justify-end gap-3 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+              Time Elapsed
+            </span>
+            <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
+              {formatTime(stats.time)}
+            </span>
+          </div>
 
-        {/* Metric 4 */}
-        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
-          <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
-            Energy Exerted
-          </span>
-          <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
-            {calories}
-            <span className="ml-2 text-xl tracking-normal text-muted-foreground">kcal</span>
-          </span>
+          {/* Metric 4 */}
+          <div className="flex flex-col justify-end gap-3 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+              Energy Exerted
+            </span>
+            <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
+              {calories}
+              <span className="ml-2 text-xl tracking-normal text-muted-foreground">kcal</span>
+            </span>
+          </div>
         </div>
       </footer>
 

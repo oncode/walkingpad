@@ -33,6 +33,7 @@ type WalkingPadContextValue = {
   setSpeed: (kmh: number) => Promise<void>;
   setMode: (mode: PadMode) => Promise<void>;
   setSensitivity: (level: AutoSensitivity) => Promise<void>;
+  resetSession: () => void;
 };
 
 const WalkingPadContext = createContext<WalkingPadContextValue | null>(null);
@@ -49,6 +50,8 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
   const notifyListenerRef = useRef<((e: Event) => void) | null>(null);
   const intentionalDisconnectRef = useRef(false);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const rawStatsRef = useRef({ time: 0, distance: 0, steps: 0 });
+  const sessionOffsetRef = useRef({ time: 0, distance: 0, steps: 0 });
 
   const writeCmd = useCallback(async (data: Uint8Array): Promise<boolean> => {
     if (!writeCharRef.current) return false;
@@ -92,6 +95,8 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     setModeState("standby");
     setSensitivityState(2);
     setStats(DEFAULT_STATS);
+    rawStatsRef.current = { time: 0, distance: 0, steps: 0 };
+    sessionOffsetRef.current = { time: 0, distance: 0, steps: 0 };
     if (!intentionalDisconnectRef.current) {
       toast.error("Device disconnected");
     }
@@ -132,14 +137,33 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
           setModeState((prev) => (prev !== decoded.mode ? decoded.mode! : prev));
         }
 
+        const prevRaw = rawStatsRef.current;
+        if (decoded.time < prevRaw.time) sessionOffsetRef.current.time += prevRaw.time;
+        if (decoded.distance < prevRaw.distance)
+          sessionOffsetRef.current.distance += prevRaw.distance;
+        if (decoded.steps < prevRaw.steps) sessionOffsetRef.current.steps += prevRaw.steps;
+
+        rawStatsRef.current = {
+          time: decoded.time,
+          distance: decoded.distance,
+          steps: decoded.steps,
+        };
+
+        const effectiveDecoded = {
+          ...decoded,
+          time: decoded.time + sessionOffsetRef.current.time,
+          distance: decoded.distance + sessionOffsetRef.current.distance,
+          steps: decoded.steps + sessionOffsetRef.current.steps,
+        };
+
         setStats((prev) =>
-          prev.beltStatus === decoded.beltStatus &&
-          prev.speed === decoded.speed &&
-          prev.time === decoded.time &&
-          prev.distance === decoded.distance &&
-          prev.steps === decoded.steps
+          prev.beltStatus === effectiveDecoded.beltStatus &&
+          prev.speed === effectiveDecoded.speed &&
+          prev.time === effectiveDecoded.time &&
+          prev.distance === effectiveDecoded.distance &&
+          prev.steps === effectiveDecoded.steps
             ? prev
-            : decoded,
+            : effectiveDecoded,
         );
       };
       notifyListenerRef.current = notifyHandler;
@@ -208,6 +232,16 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     [writeCmd],
   );
 
+  const resetSession = useCallback(() => {
+    sessionOffsetRef.current = { time: 0, distance: 0, steps: 0 };
+    setStats((prev) => ({
+      ...prev,
+      time: rawStatsRef.current.time,
+      distance: rawStatsRef.current.distance,
+      steps: rawStatsRef.current.steps,
+    }));
+  }, []);
+
   return (
     <WalkingPadContext.Provider
       value={{
@@ -223,6 +257,7 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
         setSpeed,
         setMode,
         setSensitivity,
+        resetSession,
       }}
     >
       {children}

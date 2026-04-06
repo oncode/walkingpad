@@ -120,8 +120,18 @@ function formatTime(seconds: number): string {
 }
 
 function ConnectedView() {
-  const { stats, mode, sensitivity, disconnect, start, stop, setSpeed, setMode, setSensitivity } =
-    useWalkingPad();
+  const {
+    stats,
+    mode,
+    sensitivity,
+    disconnect,
+    start,
+    stop,
+    setSpeed,
+    setMode,
+    setSensitivity,
+    resetSession,
+  } = useWalkingPad();
   const { beltStatus } = stats;
 
   const [bodyWeight, setBodyWeight] = useBodyWeight();
@@ -194,12 +204,20 @@ function ConnectedView() {
             WalkingPad
           </span>
         </div>
-        <button
-          onClick={disconnect}
-          className="pt-0.5 text-[11px] font-bold tracking-[0.2em] text-muted-foreground uppercase transition-colors duration-500 hover:text-foreground"
-        >
-          Disconnect
-        </button>
+        <div className="flex items-center gap-6">
+          <button
+            onClick={resetSession}
+            className="pt-0.5 text-[11px] font-bold tracking-[0.2em] text-muted-foreground uppercase transition-colors duration-500 hover:text-foreground"
+          >
+            Reset Session
+          </button>
+          <button
+            onClick={disconnect}
+            className="pt-0.5 text-[11px] font-bold tracking-[0.2em] text-muted-foreground uppercase transition-colors duration-500 hover:text-foreground"
+          >
+            Disconnect
+          </button>
+        </div>
       </header>
 
       {/* Main Display: Typographic Hero */}
@@ -304,7 +322,7 @@ function ConnectedView() {
       </main>
 
       {/* Auxiliary Stats Layer (Asymmetric Grid) */}
-      <footer className="grid w-full grid-cols-2 gap-y-8 border-t border-white/3 px-6 py-8 md:grid-cols-4 lg:gap-y-12 lg:px-12 lg:py-12">
+      <footer className="grid w-full grid-cols-2 gap-y-8 border-t border-white/3 px-6 py-8 md:grid-cols-5 lg:gap-y-12 lg:px-12 lg:py-12">
         {/* Modals & Settings */}
         <div className="col-span-2 flex flex-col justify-end gap-8 md:col-span-1 md:pr-12 lg:gap-10">
           <div className="flex flex-col gap-4">
@@ -380,17 +398,17 @@ function ConnectedView() {
         </div>
 
         {/* Metric 1 */}
-        <div className="flex flex-col justify-end gap-3 md:border-l md:border-white/3 md:pl-10">
+        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
           <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
-            Time Elapsed
+            Steps
           </span>
           <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
-            {formatTime(stats.time)}
+            {stats.steps}
           </span>
         </div>
 
         {/* Metric 2 */}
-        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-10">
+        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
           <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
             Distance
           </span>
@@ -401,7 +419,17 @@ function ConnectedView() {
         </div>
 
         {/* Metric 3 */}
-        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-10">
+        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
+          <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
+            Time Elapsed
+          </span>
+          <span className="text-4xl font-light tracking-tighter tabular-nums lg:text-5xl">
+            {formatTime(stats.time)}
+          </span>
+        </div>
+
+        {/* Metric 4 */}
+        <div className="mt-4 flex flex-col justify-end gap-3 md:mt-0 md:border-l md:border-white/3 md:pl-6 lg:pl-10">
           <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
             Energy Exerted
           </span>

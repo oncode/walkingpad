@@ -242,7 +242,7 @@ function ConnectedView() {
           >
             <button
               onClick={handleSpeedDown}
-              disabled={targetSpeed <= 0.5 || mode === "auto" || mode === "standby"}
+              disabled={targetSpeed <= 0.5 || mode === "auto" || mode === "standby" || !isRunning}
               className="group flex size-16 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 md:size-24 lg:size-32"
             >
               <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">
@@ -310,7 +310,7 @@ function ConnectedView() {
           >
             <button
               onClick={handleSpeedUp}
-              disabled={targetSpeed >= 6.0 || mode === "auto" || mode === "standby"}
+              disabled={targetSpeed >= 6.0 || mode === "auto" || mode === "standby" || !isRunning}
               className="group flex size-16 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 md:size-24 lg:size-32"
             >
               <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">

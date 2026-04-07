@@ -16,6 +16,7 @@ import {
   encodeSetSpeed,
   encodeStart,
   encodeStop,
+  isCountdown,
 } from "./protocol";
 
 export type ConnectionStatus = "disconnected" | "connecting" | "connected";
@@ -34,6 +35,8 @@ type WalkingPadContextValue = {
   setMode: (mode: PadMode) => Promise<void>;
   setSensitivity: (level: AutoSensitivity) => Promise<void>;
   resetSession: () => void;
+  handleStartStop: () => Promise<void>;
+  isStartStopPending: boolean;
 };
 
 const WalkingPadContext = createContext<WalkingPadContextValue | null>(null);
@@ -43,6 +46,7 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<PadMode>("standby");
   const [sensitivity, setSensitivityState] = useState<AutoSensitivity>(2);
   const [stats, setStats] = useState<WalkingPadStats>(DEFAULT_STATS);
+  const [isStartStopPending, setIsStartStopPending] = useState(false);
 
   const writeCharRef = useRef<BluetoothRemoteGATTCharacteristic | null>(null);
   const deviceRef = useRef<BluetoothDevice | null>(null);
@@ -228,6 +232,20 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     deviceRef.current?.gatt?.disconnect();
   }, [mode, setMode]);
 
+  const handleStartStop = useCallback(async () => {
+    if (isCountdown(stats.beltStatus)) return;
+    setIsStartStopPending(true);
+    try {
+      if (mode === "standby") {
+        await setMode("manual");
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      await (stats.beltStatus === "running" ? stop() : start());
+    } finally {
+      setIsStartStopPending(false);
+    }
+  }, [mode, stats.beltStatus, setMode, start, stop]);
+
   const setSensitivity = useCallback(
     async (level: AutoSensitivity) => {
       const ok = await writeCmd(encodeSetSensitivity(level));
@@ -262,6 +280,8 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
         setMode,
         setSensitivity,
         resetSession,
+        handleStartStop,
+        isStartStopPending,
       }}
     >
       {children}

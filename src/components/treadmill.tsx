@@ -125,12 +125,12 @@ function ConnectedView() {
     mode,
     sensitivity,
     disconnect,
-    start,
-    stop,
     setSpeed,
     setMode,
     setSensitivity,
     resetSession,
+    handleStartStop,
+    isStartStopPending,
   } = useWalkingPad();
   const { beltStatus } = stats;
 
@@ -161,22 +161,6 @@ function ConnectedView() {
     setTargetSpeed(next);
     lastCmdTimeRef.current = Date.now();
     void setSpeed(next);
-  };
-
-  const [isPending, setIsPending] = useState(false);
-
-  const handleStartStop = async () => {
-    if (isCountdown(beltStatus)) return;
-    setIsPending(true);
-    try {
-      if (mode === "standby") {
-        await setMode("manual");
-        await new Promise((r) => setTimeout(r, 1000));
-      }
-      await (isRunning ? stop() : start());
-    } finally {
-      setIsPending(false);
-    }
   };
 
   return (
@@ -266,7 +250,7 @@ function ConnectedView() {
             <div className="mt-14 flex w-full justify-center lg:mt-24">
               <button
                 onClick={handleStartStop}
-                disabled={isPending || isCountdown(beltStatus)}
+                disabled={isStartStopPending || isCountdown(beltStatus)}
                 className={cn(
                   "relative flex h-14 w-auto min-w-[200px] transform items-center justify-center overflow-hidden rounded-xl px-8 font-bold tracking-[0.2em] uppercase transition-all duration-700 ease-quart hover:scale-[1.02] focus:ring-2 focus:ring-primary focus:ring-offset-4 focus:ring-offset-background focus:outline-none active:scale-95 lg:h-16 lg:px-12",
                   isRunning

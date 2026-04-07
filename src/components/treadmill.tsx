@@ -169,7 +169,7 @@ function ConnectedView() {
     if (isCountdown(beltStatus)) return;
     setIsPending(true);
     try {
-      if (!isRunning && mode === "standby") {
+      if (mode === "standby") {
         await setMode("manual");
         await new Promise((r) => setTimeout(r, 1000));
       }

@@ -27,7 +27,7 @@ type WalkingPadContextValue = {
   sensitivity: AutoSensitivity;
   stats: WalkingPadStats;
   connect: () => Promise<void>;
-  disconnect: () => void;
+  disconnect: () => Promise<void>;
   start: () => Promise<void>;
   stop: () => Promise<void>;
   setSpeed: (kmh: number) => Promise<void>;
@@ -195,11 +195,6 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     }
   }, [handleDisconnect]);
 
-  const disconnect = useCallback(() => {
-    intentionalDisconnectRef.current = true;
-    deviceRef.current?.gatt?.disconnect();
-  }, []);
-
   const start = useCallback(async () => {
     await writeCmd(encodeStart());
   }, [writeCmd]);
@@ -223,6 +218,15 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     },
     [writeCmd],
   );
+
+  const disconnect = useCallback(async () => {
+    intentionalDisconnectRef.current = true;
+    if (mode !== "standby") {
+      await setMode("standby");
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    deviceRef.current?.gatt?.disconnect();
+  }, [mode, setMode]);
 
   const setSensitivity = useCallback(
     async (level: AutoSensitivity) => {

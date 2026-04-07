@@ -1,6 +1,15 @@
 # walkingpad
 
-Web UI for managing a KingSmith walking pad. Built on a full-stack React 19 + TanStack Start scaffold, with Drizzle ORM, shadcn/ui, and Better Auth.
+Web UI for managing a KingSmith walking pad.
+
+Features:
+
+- Speed control for manual mode
+- Sensitivity control for auto mode
+- Stats display (Steps, Distance, Time, Calories)
+- Weight input for more accurate calorie calculations
+- Auto switching to manual mode when starting and no mode is set yet
+- Auto switching to standby mode when disconnecting
 
 This project was scaffolded with [`create-mugnavo`](https://github.com/mugnavo/create-mugnavo).
 

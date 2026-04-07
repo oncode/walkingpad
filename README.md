@@ -13,6 +13,16 @@ Features:
 - Doesn't reset session stats when belt is stopped
 - Sets mode directly to standby when disconnecting
 
+## Development
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+The development server should now be running at [http://localhost:3000](http://localhost:3000).
+
 ## License
 
 GPL-3.0-or-later

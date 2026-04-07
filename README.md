@@ -10,6 +10,7 @@ Features:
 - Weight input for more accurate calorie calculations
 - Auto switching to manual mode when starting and no mode is set yet
 - Auto switching to standby mode when disconnecting
+- Doesn't reset session stats when belt is stopped
 
 This project was scaffolded with [`create-mugnavo`](https://github.com/mugnavo/create-mugnavo).
 

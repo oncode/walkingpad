@@ -1,4 +1,4 @@
-# walkingpad
+# WalkingPad
 
 Web UI for managing a KingSmith walking pad.
 

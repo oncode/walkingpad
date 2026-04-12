@@ -22,3 +22,5 @@ dist
 /public/build
 
 .tanstack
+# Added by code-review-graph
+.code-review-graph/

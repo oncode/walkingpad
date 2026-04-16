@@ -6,6 +6,11 @@
       "sourceType": "github",
       "computedHash": "c2b1dc6c2490860ff92005b2369057c77c36fa90e866116b8da5c09e9b997da1"
     },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+    },
     "hooked-ux": {
       "source": "wondelai/skills",
       "sourceType": "github",

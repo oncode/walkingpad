@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Conveyor Belt — No-Jump Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #0f0f12;
+        color: #f9f8f4;
+        font-family: system-ui, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 24px 60px;
+        gap: 28px;
+      }
+
+      h1 {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #9999aa;
+      }
+
+      p.subtitle {
+        font-size: 11px;
+        color: #555;
+        letter-spacing: 0.05em;
+        text-align: center;
+        margin-top: -20px;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        width: 100%;
+        max-width: 840px;
+      }
+
+      .card {
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .card.highlight {
+        border-color: rgba(182, 240, 92, 0.35);
+        box-shadow: 0 0 0 1px rgba(182, 240, 92, 0.12);
+      }
+
+      .preview {
+        position: relative;
+        height: 260px;
+        background: #0f0f12;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .belt-layer {
+        position: absolute;
+        inset: 0;
+        transition: opacity 0.7s ease;
+      }
+
+      .belt-bg {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          #f9f8f4 0px,
+          #f9f8f4 1px,
+          transparent 1px,
+          transparent 20px
+        );
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 0, 0, 0.12) 30%,
+          rgba(0, 0, 0, 0.12) 70%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 0, 0, 0.12) 30%,
+          rgba(0, 0, 0, 0.12) 70%,
+          transparent 100%
+        );
+      }
+
+      /* CSS-only variant uses keyframe animation */
+      .css-belt {
+        animation: cssScroll linear infinite;
+      }
+
+      @keyframes cssScroll {
+        from {
+          background-position-y: 0;
+        }
+        to {
+          background-position-y: 20px;
+        }
+      }
+
+      .speed-display {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      .speed-number {
+        font-size: 100px;
+        font-weight: 500;
+        letter-spacing: -0.04em;
+        line-height: 0.85;
+        color: #f9f8f4;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .speed-unit {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: rgba(249, 248, 244, 0.35);
+        margin-top: 10px;
+      }
+
+      .card-footer {
+        padding: 14px 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .card-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #f9f8f4;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .badge {
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(182, 240, 92, 0.4);
+        color: #b6f05c;
+        letter-spacing: 0.1em;
+      }
+
+      .card-desc {
+        font-size: 11px;
+        color: #555;
+        line-height: 1.5;
+      }
+
+      /* Controls */
+      .controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        max-width: 840px;
+      }
+
+      .controls-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #555;
+        min-width: 60px;
+      }
+
+      .speed-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .btn {
+        width: 36px;
+        height: 36px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        color: #f9f8f4;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .speed-val {
+        font-size: 15px;
+        font-weight: 700;
+        color: #b6f05c;
+        min-width: 64px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .preset-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .preset-btn {
+        padding: 6px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        background: transparent;
+        color: #888;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .preset-btn:hover {
+        color: #f9f8f4;
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .toggle-btn {
+        padding: 8px 20px;
+        border: 1px solid rgba(182, 240, 92, 0.3);
+        border-radius: 8px;
+        background: rgba(182, 240, 92, 0.08);
+        color: #b6f05c;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .toggle-btn.off {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: transparent;
+        color: #555;
+      }
+
+      .hint {
+        font-size: 11px;
+        color: #444;
+        letter-spacing: 0.05em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>No-Jump Speed Transitions</h1>
+    <p class="subtitle">Try changing speed quickly — left card jumps, right card eases smoothly</p>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="controls-row">
+        <span class="label">Speed</span>
+        <div class="speed-group">
+          <button class="btn" onclick="adjustSpeed(-0.5)">−</button>
+          <span class="speed-val" id="speed-display">3.0 km/h</span>
+          <button class="btn" onclick="adjustSpeed(+0.5)">+</button>
+        </div>
+        <button class="toggle-btn" id="belt-toggle" onclick="toggleBelt()">Running</button>
+      </div>
+      <div class="controls-row">
+        <span class="label">Presets</span>
+        <div class="preset-row">
+          <button class="preset-btn" onclick="setSpeed(2.0)">2.0 slow</button>
+          <button class="preset-btn" onclick="setSpeed(3.5)">3.5 walk</button>
+          <button class="preset-btn" onclick="setSpeed(5.0)">5.0 brisk</button>
+          <button class="preset-btn" onclick="setSpeed(6.0)">6.0 fast</button>
+        </div>
+      </div>
+      <p class="hint">Tap presets rapidly to stress-test — left will jump, right stays smooth</p>
+    </div>
+
+    <div class="split">
+      <!-- LEFT: CSS animation (jumps on speed change) -->
+      <div class="card">
+        <div class="preview">
+          <div class="belt-layer" id="css-layer">
+            <div class="belt-bg css-belt" id="css-belt-el"></div>
+          </div>
+          <div class="speed-display">
+            <span class="speed-number" id="css-num">3.0</span>
+            <span class="speed-unit">km/h</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-label">CSS animation-duration</div>
+          <div class="card-desc">
+            animation-duration changes mid-cycle → browser resets phase → visible jump on each speed
+            change
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: rAF-driven position (no jumps) -->
+      <div class="card highlight">
+        <div class="preview">
+          <div class="belt-layer" id="raf-layer">
+            <div class="belt-bg" id="raf-belt-el"></div>
+          </div>
+          <div class="speed-display">
+            <span class="speed-number" id="raf-num">3.0</span>
+            <span class="speed-unit">km/h</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-label">
+            rAF velocity easing <span class="badge">Chosen approach</span>
+          </div>
+          <div class="card-desc">
+            Position accumulates continuously as velocity × Δt. Speed changes ease the velocity — no
+            phase reset, no jump.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const K = 8;
+      const STRIPE = 20; // px repeat unit
+      let speed = 3.0;
+      let beltOn = true;
+
+      // ─── Number displays ───────────────────────────────────────────────────────
+      function updateDisplays() {
+        document.getElementById("speed-display").textContent = speed.toFixed(1) + " km/h";
+        document.getElementById("css-num").textContent = speed.toFixed(1);
+        document.getElementById("raf-num").textContent = speed.toFixed(1);
+      }
+
+      // ─── CSS-only belt (demonstrates the jump) ─────────────────────────────────
+      const cssBelt = document.getElementById("css-belt-el");
+      function updateCssBelt() {
+        const dur = K / Math.max(speed, 0.5);
+        cssBelt.style.animationDuration = dur + "s";
+      }
+
+      // ─── rAF-driven belt (no jump) ─────────────────────────────────────────────
+      const rafBelt = document.getElementById("raf-belt-el");
+      let posY = 0;
+      let currentVel = (STRIPE * speed) / K; // px/s  (= STRIPE / duration)
+      let targetVel = currentVel;
+      let lastTs = null;
+      let rafId;
+
+      function rafFrame(ts) {
+        if (lastTs !== null) {
+          const dt = Math.min((ts - lastTs) / 1000, 0.05); // cap at 50ms to avoid big jumps on tab-switch
+
+          // Ease velocity toward target (exponential ease, ~0.6s to settle)
+          const diff = targetVel - currentVel;
+          if (Math.abs(diff) < 0.002) {
+            currentVel = targetVel;
+          } else {
+            currentVel += diff * 0.08; // 8% of gap per frame ≈ 0.6s
+          }
+
+          posY = (posY + currentVel * dt) % STRIPE;
+          rafBelt.style.backgroundPositionY = posY + "px";
+        }
+        lastTs = ts;
+        rafId = requestAnimationFrame(rafFrame);
+      }
+      rafId = requestAnimationFrame(rafFrame);
+
+      // ─── Controls ──────────────────────────────────────────────────────────────
+      function setSpeed(s) {
+        speed = Math.round(Math.max(0.5, Math.min(6.0, s)) * 10) / 10;
+        targetVel = (STRIPE * speed) / K;
+        updateCssBelt();
+        updateDisplays();
+      }
+
+      function adjustSpeed(delta) {
+        setSpeed(speed + delta);
+      }
+
+      function toggleBelt() {
+        beltOn = !beltOn;
+        const btn = document.getElementById("belt-toggle");
+        btn.textContent = beltOn ? "Running" : "Stopped";
+        btn.className = "toggle-btn" + (beltOn ? "" : " off");
+        const opacity = beltOn ? "1" : "0";
+        document.getElementById("css-layer").style.opacity = opacity;
+        document.getElementById("raf-layer").style.opacity = opacity;
+        // Note: transition is on the .belt-layer element
+        document.getElementById("css-layer").style.transition = "opacity 0.7s ease";
+        document.getElementById("raf-layer").style.transition = "opacity 0.7s ease";
+      }
+
+      updateCssBelt();
+      updateDisplays();
+    </script>
+  </body>
+</html>

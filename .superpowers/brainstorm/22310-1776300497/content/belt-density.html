@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Conveyor Belt — Density Options</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #0f0f12;
+        color: #f9f8f4;
+        font-family: "DM Sans", system-ui, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 24px;
+        gap: 32px;
+      }
+
+      h1 {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #9999aa;
+        text-align: center;
+      }
+
+      .subtitle {
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+        margin-top: -24px;
+        letter-spacing: 0.05em;
+      }
+
+      .options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        width: 100%;
+        max-width: 960px;
+      }
+
+      .option {
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .option:hover {
+        border-color: rgba(182, 240, 92, 0.3);
+      }
+
+      .option.selected {
+        border-color: #b6f05c;
+        box-shadow:
+          0 0 0 1px #b6f05c,
+          0 0 30px rgba(182, 240, 92, 0.15);
+      }
+
+      .preview {
+        position: relative;
+        height: 280px;
+        background: #0f0f12;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Belt animation layers */
+      .belt {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transition: opacity 0.7s ease;
+      }
+
+      .belt.visible {
+        opacity: 1;
+      }
+
+      .belt-lines {
+        position: absolute;
+        inset: 0;
+        animation: belt-scroll linear infinite;
+      }
+
+      /* Variant A: Coarse — 32px repeat, 2px lines */
+      .belt-a .belt-lines {
+        background: repeating-linear-gradient(
+          to bottom,
+          #f9f8f4 0px,
+          #f9f8f4 2px,
+          transparent 2px,
+          transparent 32px
+        );
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 0, 0, 0.13) 30%,
+          rgba(0, 0, 0, 0.13) 70%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 0, 0, 0.13) 30%,
+          rgba(0, 0, 0, 0.13) 70%,
+          transparent 100%
+        );
+        animation-duration: 2s;
+        animation-name: belt-scroll-32;
+      }
+
+      /* Variant B: Medium — 20px repeat, 1px lines (recommended) */
+      .belt-b .belt-lines {
+        background: repeating-linear-gradient(
+          to bottom,
+          #f9f8f4 0px,
+          #f9f8f4 1px,
+          transparent 1px,
+          transparent 20px
+        );
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 0, 0, 0.12) 30%,
+          rgba(0, 0, 0, 0.12) 70%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 0, 0, 0.12) 30%,
+          rgba(0, 0, 0, 0.12) 70%,
+          transparent 100%
+        );
+        animation-duration: 2s;
+        animation-name: belt-scroll-20;
+      }
+
+      /* Variant C: Fine — 12px repeat, 1px lines */
+      .belt-c .belt-lines {
+        background: repeating-linear-gradient(
+          to bottom,
+          #f9f8f4 0px,
+          #f9f8f4 1px,
+          transparent 1px,
+          transparent 12px
+        );
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 0, 0, 0.1) 30%,
+          rgba(0, 0, 0, 0.1) 70%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(0, 0, 0, 0.1) 30%,
+          rgba(0, 0, 0, 0.1) 70%,
+          transparent 100%
+        );
+        animation-duration: 2s;
+        animation-name: belt-scroll-12;
+      }
+
+      @keyframes belt-scroll-32 {
+        from {
+          background-position-y: 0;
+        }
+        to {
+          background-position-y: 32px;
+        }
+      }
+      @keyframes belt-scroll-20 {
+        from {
+          background-position-y: 0;
+        }
+        to {
+          background-position-y: 20px;
+        }
+      }
+      @keyframes belt-scroll-12 {
+        from {
+          background-position-y: 0;
+        }
+        to {
+          background-position-y: 12px;
+        }
+      }
+
+      /* Speed readout overlay */
+      .speed-display {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        user-select: none;
+      }
+
+      .speed-number {
+        font-size: 96px;
+        font-weight: 500;
+        letter-spacing: -0.04em;
+        line-height: 0.85;
+        color: #f9f8f4;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .speed-unit {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: rgba(249, 248, 244, 0.4);
+        margin-top: 12px;
+      }
+
+      .option-footer {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .option-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #f9f8f4;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .badge {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(182, 240, 92, 0.4);
+        color: #b6f05c;
+      }
+
+      .option-desc {
+        font-size: 11px;
+        color: #666;
+        line-height: 1.5;
+      }
+
+      /* Speed controls row */
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-top: -16px;
+      }
+
+      .controls label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #666;
+      }
+
+      .speed-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .speed-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.04);
+        color: #f9f8f4;
+        font-size: 18px;
+        font-weight: 300;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .speed-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .speed-val {
+        font-size: 13px;
+        font-weight: 700;
+        color: #b6f05c;
+        min-width: 40px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .toggle-belt {
+        padding: 8px 20px;
+        border: 1px solid rgba(182, 240, 92, 0.3);
+        border-radius: 8px;
+        background: transparent;
+        color: #b6f05c;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .toggle-belt.on {
+        background: rgba(182, 240, 92, 0.15);
+        border-color: #b6f05c;
+      }
+
+      .toggle-belt:hover {
+        background: rgba(182, 240, 92, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Conveyor Belt — Stripe Density</h1>
+    <p class="subtitle">
+      All variants at 3 km/h · Click an option to select it · Use controls to compare speeds
+    </p>
+
+    <!-- Live controls -->
+    <div class="controls">
+      <div class="speed-group">
+        <label>Speed</label>
+        <button class="speed-btn" onclick="adjustSpeed(-0.5)">−</button>
+        <span class="speed-val" id="speed-display">3.0 km/h</span>
+        <button class="speed-btn" onclick="adjustSpeed(0.5)">+</button>
+      </div>
+      <button class="toggle-belt on" id="belt-toggle" onclick="toggleBelt()">Belt: On</button>
+    </div>
+
+    <div class="options">
+      <!-- Option A: Coarse -->
+      <div class="option" data-choice="a" onclick="selectOption(this)">
+        <div class="preview">
+          <div class="belt belt-a visible" id="belt-a">
+            <div class="belt-lines"></div>
+          </div>
+          <div class="speed-display">
+            <span class="speed-number" id="num-a">3.0</span>
+            <span class="speed-unit">km/h</span>
+          </div>
+        </div>
+        <div class="option-footer">
+          <div class="option-label">A — Coarse</div>
+          <div class="option-desc">
+            2px lines · 32px spacing · Railroad-track feel, lines clearly readable as stripes
+          </div>
+        </div>
+      </div>
+
+      <!-- Option B: Medium (recommended) -->
+      <div class="option" data-choice="b" onclick="selectOption(this)">
+        <div class="preview">
+          <div class="belt belt-b visible" id="belt-b">
+            <div class="belt-lines"></div>
+          </div>
+          <div class="speed-display">
+            <span class="speed-number" id="num-b">3.0</span>
+            <span class="speed-unit">km/h</span>
+          </div>
+        </div>
+        <div class="option-footer">
+          <div class="option-label">B — Medium <span class="badge">Recommended</span></div>
+          <div class="option-desc">
+            1px lines · 20px spacing · Subtle, rhythmic — reads as motion without distraction
+          </div>
+        </div>
+      </div>
+
+      <!-- Option C: Fine -->
+      <div class="option" data-choice="c" onclick="selectOption(this)">
+        <div class="preview">
+          <div class="belt belt-c visible" id="belt-c">
+            <div class="belt-lines"></div>
+          </div>
+          <div class="speed-display">
+            <span class="speed-number" id="num-c">3.0</span>
+            <span class="speed-unit">km/h</span>
+          </div>
+        </div>
+        <div class="option-footer">
+          <div class="option-label">C — Fine</div>
+          <div class="option-desc">
+            1px lines · 12px spacing · Dense texture, very atmospheric, less clearly "belt-like"
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const K = 8;
+      let speed = 3.0;
+      let beltOn = true;
+      let selected = null;
+
+      const belts = {
+        a: document.getElementById("belt-a"),
+        b: document.getElementById("belt-b"),
+        c: document.getElementById("belt-c"),
+      };
+
+      const repeats = { a: 32, b: 20, c: 12 };
+
+      function getDuration(s) {
+        return K / Math.max(s, 0.5);
+      }
+
+      function updateAnimations() {
+        const dur = getDuration(speed);
+        Object.keys(belts).forEach((key) => {
+          const lines = belts[key].querySelector(".belt-lines");
+          lines.style.animationDuration = dur + "s";
+        });
+      }
+
+      function adjustSpeed(delta) {
+        speed = Math.round(Math.max(0.5, Math.min(6.0, speed + delta)) * 10) / 10;
+        document.getElementById("speed-display").textContent = speed.toFixed(1) + " km/h";
+        ["a", "b", "c"].forEach((k) => {
+          document.getElementById("num-" + k).textContent = speed.toFixed(1);
+        });
+        updateAnimations();
+      }
+
+      function toggleBelt() {
+        beltOn = !beltOn;
+        const btn = document.getElementById("belt-toggle");
+        btn.textContent = "Belt: " + (beltOn ? "On" : "Off");
+        btn.className = "toggle-belt" + (beltOn ? " on" : "");
+        Object.values(belts).forEach((b) => {
+          b.style.opacity = beltOn ? "1" : "0";
+        });
+      }
+
+      function selectOption(el) {
+        document.querySelectorAll(".option").forEach((o) => o.classList.remove("selected"));
+        el.classList.add("selected");
+        const choice = el.dataset.choice;
+        // emit selection event for the server
+        if (window.__superpowers_select)
+          window.__superpowers_select(choice, "Option " + choice.toUpperCase());
+      }
+
+      updateAnimations();
+    </script>
+  </body>
+</html>

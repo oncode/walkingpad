@@ -1,0 +1,5 @@
+{"type":"server-started","port":54247,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:54247","screen_dir":"/Users/oncode/Web/projects/treadmill/.superpowers/brainstorm/22310-1776300497/content","state_dir":"/Users/oncode/Web/projects/treadmill/.superpowers/brainstorm/22310-1776300497/state"}
+{"type":"screen-added","file":"/Users/oncode/Web/projects/treadmill/.superpowers/brainstorm/22310-1776300497/content/belt-density.html"}
+{"type":"screen-added","file":"/Users/oncode/Web/projects/treadmill/.superpowers/brainstorm/22310-1776300497/content/belt-no-jump.html"}
+{"type":"screen-added","file":"/Users/oncode/Web/projects/treadmill/.superpowers/brainstorm/22310-1776300497/content/waiting.html"}
+{"type":"server-stopped","reason":"owner process exited"}

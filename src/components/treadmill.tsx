@@ -119,6 +119,63 @@ function formatTime(seconds: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+// ---------------------------------------------------------------------------
+// Conveyor belt background animation
+// ---------------------------------------------------------------------------
+const BELT_STRIPE = 20; // px — repeat unit matching the CSS (1px line + 19px gap)
+const BELT_K = 8; // duration constant: period(s) = K / speed(km/h)
+// → 2.0 km/h = 4.0 s/loop, 6.0 km/h = 1.33 s/loop
+
+function ConveyorBelt({ isRunning, speed }: { isRunning: boolean; speed: number }) {
+  const divRef = useRef<HTMLDivElement>(null);
+  const posYRef = useRef(0);
+  const currentVelRef = useRef((BELT_STRIPE * speed) / BELT_K);
+  const speedRef = useRef(speed);
+
+  // Keep speedRef current whenever the prop changes — no loop restart needed.
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
+
+  // Single rAF loop for the lifetime of this component.
+  useEffect(() => {
+    let lastTs: number | null = null;
+    let rafId: number;
+
+    function frame(ts: number) {
+      if (lastTs !== null) {
+        // Cap dt at 50 ms to absorb tab-switch gaps without a large position jump.
+        const dt = Math.min((ts - lastTs) / 1000, 0.05);
+
+        // Ease velocity toward target (exponential, ~0.6 s to settle at 60 fps).
+        const targetVel = (BELT_STRIPE * speedRef.current) / BELT_K;
+        currentVelRef.current += (targetVel - currentVelRef.current) * 0.08;
+
+        // Accumulate position — this is why there are no jumps on speed change.
+        posYRef.current = (posYRef.current + currentVelRef.current * dt) % BELT_STRIPE;
+
+        if (divRef.current) {
+          divRef.current.style.backgroundPositionY = `${posYRef.current}px`;
+        }
+      }
+      lastTs = ts;
+      rafId = requestAnimationFrame(frame);
+    }
+
+    rafId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId);
+  }, []); // empty deps — loop runs once on mount, cleans up on unmount
+
+  return (
+    <div
+      className="pointer-events-none absolute inset-0"
+      style={{ opacity: isRunning ? 1 : 0, transition: "opacity 0.7s ease" }}
+    >
+      <div ref={divRef} className="belt-lines absolute inset-0" />
+    </div>
+  );
+}
+
 function ConnectedView() {
   const {
     stats,
@@ -206,13 +263,7 @@ function ConnectedView() {
 
       {/* Main Display: Typographic Hero */}
       <main className="relative flex flex-1 flex-col justify-center overflow-hidden px-4 py-8 lg:px-12 lg:py-12">
-        {/* Subtle background glow attached to the speed to ground it */}
-        <div
-          className={cn(
-            "absolute top-1/2 left-1/2 h-[50vh] w-[50vw] -translate-x-1/2 -translate-y-1/2 rounded-[100%] blur-[120px] transition-opacity duration-1000",
-            isRunning ? "pointer-events-none bg-primary opacity-15" : "opacity-0",
-          )}
-        ></div>
+        <ConveyorBelt isRunning={isRunning} speed={targetSpeed} />
 
         <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between">
           {/* Minus Button */}

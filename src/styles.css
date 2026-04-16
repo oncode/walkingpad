@@ -134,3 +134,27 @@
     cursor: pointer;
   }
 }
+
+.belt-lines {
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--color-foreground) 0px,
+    var(--color-foreground) 1px,
+    transparent 1px,
+    transparent 20px
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.12) 30%,
+    rgba(0, 0, 0, 0.12) 70%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.12) 30%,
+    rgba(0, 0, 0, 0.12) 70%,
+    transparent 100%
+  );
+}

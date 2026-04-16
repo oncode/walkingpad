@@ -1,6 +1,8 @@
 import { RiBluetoothLine, RiLoader4Line } from "@remixicon/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { TreadmillSettingsMenu } from "@/components/treadmill-settings";
+import { useTreadmillSettings } from "@/hooks/use-treadmill-settings";
 import { cn } from "@/lib/utils";
 import { WalkingPadProvider, useWalkingPad } from "@/lib/walking-pad/context";
 import { SENSITIVITY_LABELS, countdownLabel, isCountdown } from "@/lib/walking-pad/protocol";
@@ -193,12 +195,14 @@ function ConnectedView() {
 
   const [bodyWeight, setBodyWeight] = useBodyWeight();
   const [weightInput, setWeightInput] = useState(String(bodyWeight));
+  const [settings, updateSettings] = useTreadmillSettings();
 
   const isRunning = beltStatus === "running";
   const calories = calculateCalories(stats.time, stats.distance, bodyWeight);
 
   const [targetSpeed, setTargetSpeed] = useState(stats.speed);
   const lastCmdTimeRef = useRef(0);
+  const prevBeltStatusRef = useRef(beltStatus);
 
   useEffect(() => {
     if (Date.now() - lastCmdTimeRef.current > 2000) {
@@ -206,17 +210,35 @@ function ConnectedView() {
     }
   }, [stats.speed]);
 
+  // Logic to restore speed
+  useEffect(() => {
+    if (prevBeltStatusRef.current !== "running" && beltStatus === "running") {
+      // Just transitioned to running
+      if (settings.restoreSpeed && settings.lastSpeed > 0) {
+        // We delay slightly to let it settle into running state
+        const timeoutId = setTimeout(() => {
+          void setSpeed(settings.lastSpeed);
+          setTargetSpeed(settings.lastSpeed);
+        }, 1000);
+        return () => clearTimeout(timeoutId);
+      }
+    }
+    prevBeltStatusRef.current = beltStatus;
+  }, [beltStatus, settings.restoreSpeed, settings.lastSpeed, setSpeed]);
+
   const handleSpeedDown = () => {
-    const next = Math.max(0.5, targetSpeed - 0.5);
+    const next = Math.max(settings.minSpeed, targetSpeed - settings.speedStep);
     setTargetSpeed(next);
     lastCmdTimeRef.current = Date.now();
+    updateSettings({ lastSpeed: next });
     void setSpeed(next);
   };
 
   const handleSpeedUp = () => {
-    const next = Math.min(6.0, targetSpeed + 0.5);
+    const next = Math.min(settings.maxSpeed, targetSpeed + settings.speedStep);
     setTargetSpeed(next);
     lastCmdTimeRef.current = Date.now();
+    updateSettings({ lastSpeed: next });
     void setSpeed(next);
   };
 
@@ -246,6 +268,7 @@ function ConnectedView() {
           </span>
         </div>
         <div className="flex items-center gap-6">
+          <TreadmillSettingsMenu />
           <button
             onClick={resetSession}
             className="pt-0.5 text-[11px] font-bold tracking-[0.2em] text-muted-foreground uppercase transition-colors duration-500 hover:text-foreground"
@@ -277,7 +300,12 @@ function ConnectedView() {
           >
             <button
               onClick={handleSpeedDown}
-              disabled={targetSpeed <= 0.5 || mode === "auto" || mode === "standby" || !isRunning}
+              disabled={
+                targetSpeed <= settings.minSpeed ||
+                mode === "auto" ||
+                mode === "standby" ||
+                !isRunning
+              }
               className="group flex size-16 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 md:size-24 lg:size-32"
             >
               <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">
@@ -345,7 +373,12 @@ function ConnectedView() {
           >
             <button
               onClick={handleSpeedUp}
-              disabled={targetSpeed >= 6.0 || mode === "auto" || mode === "standby" || !isRunning}
+              disabled={
+                targetSpeed >= settings.maxSpeed ||
+                mode === "auto" ||
+                mode === "standby" ||
+                !isRunning
+              }
               className="group flex size-16 items-center justify-center rounded-2xl border border-white/5 bg-secondary/50 backdrop-blur transition-all duration-500 ease-expo hover:border-white/10 hover:bg-secondary active:scale-95 disabled:scale-100 disabled:opacity-20 md:size-24 lg:size-32"
             >
               <span className="text-4xl font-light text-muted-foreground transition-colors duration-500 group-hover:text-primary lg:text-5xl">

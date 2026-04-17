@@ -86,6 +86,25 @@ export function TreadmillSettingsMenu() {
                 }
               />
             </div>
+            <div className="grid grid-cols-2 items-center gap-2">
+              <Label htmlFor="body-weight" className="text-xs font-semibold text-muted-foreground">
+                Body Weight (kg)
+              </Label>
+              <Input
+                id="body-weight"
+                type="number"
+                min={20}
+                max={300}
+                step={0.5}
+                className="h-8 border-white/10 bg-black/20 text-xs"
+                value={settings.bodyWeight}
+                onChange={(e) =>
+                  updateSettings({
+                    bodyWeight: parseFloat(e.target.value) || DEFAULT_SETTINGS.bodyWeight,
+                  })
+                }
+              />
+            </div>
 
             <DropdownMenuSeparator className="my-2 bg-white/5" />
 

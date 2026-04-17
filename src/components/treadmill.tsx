@@ -1,5 +1,5 @@
 import { RiBluetoothLine, RiLoader4Line } from "@remixicon/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { TreadmillSettingsMenu } from "@/components/treadmill-settings";
 import { useTreadmillSettings } from "@/hooks/use-treadmill-settings";
@@ -92,25 +92,6 @@ function calculateCalories(timeSeconds: number, distanceKm: number, weightKg: nu
   return Math.round(kcalPerMin * (timeSeconds / 60));
 }
 
-const BODY_WEIGHT_KEY = "walkingpad.bodyweight";
-
-function useBodyWeight() {
-  const [bodyWeight, setBodyWeightState] = useState<number>(() => {
-    const stored = localStorage.getItem(BODY_WEIGHT_KEY);
-    const parsed = stored ? parseFloat(stored) : NaN;
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 75;
-  });
-
-  const setBodyWeight = useCallback((kg: number) => {
-    if (Number.isFinite(kg) && kg > 0) {
-      localStorage.setItem(BODY_WEIGHT_KEY, String(kg));
-      setBodyWeightState(kg);
-    }
-  }, []);
-
-  return [bodyWeight, setBodyWeight] as const;
-}
-
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -193,12 +174,10 @@ function ConnectedView() {
   } = useWalkingPad();
   const { beltStatus } = stats;
 
-  const [bodyWeight, setBodyWeight] = useBodyWeight();
-  const [weightInput, setWeightInput] = useState(String(bodyWeight));
   const [settings, updateSettings] = useTreadmillSettings();
 
   const isRunning = beltStatus === "running";
-  const calories = calculateCalories(stats.time, stats.distance, bodyWeight);
+  const calories = calculateCalories(stats.time, stats.distance, settings.bodyWeight);
 
   const [targetSpeed, setTargetSpeed] = useState(stats.speed);
   const lastCmdTimeRef = useRef(0);
@@ -436,31 +415,6 @@ function ConnectedView() {
                   </span>
                 )}
               </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-60">
-              Operator Weight
-            </span>
-            <div className="group flex items-center gap-2">
-              <input
-                type="number"
-                min={20}
-                max={300}
-                step={0.5}
-                value={weightInput}
-                onChange={(e) => setWeightInput(e.target.value)}
-                onBlur={() => {
-                  const kg = parseFloat(weightInput);
-                  if (Number.isFinite(kg) && kg >= 20 && kg <= 300) setBodyWeight(kg);
-                  else setWeightInput(String(bodyWeight));
-                }}
-                className="w-16 border-b border-border bg-transparent pb-1 text-sm font-bold text-foreground tabular-nums transition-colors duration-300 outline-none focus:border-primary"
-              />
-              <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-                kg
-              </span>
             </div>
           </div>
         </div>

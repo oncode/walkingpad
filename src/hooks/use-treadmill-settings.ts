@@ -9,6 +9,7 @@ export interface TreadmillSettings {
   speedStep: number;
   restoreSpeed: boolean;
   lastSpeed: number;
+  bodyWeight: number;
 }
 
 export const DEFAULT_SETTINGS: TreadmillSettings = {
@@ -17,6 +18,7 @@ export const DEFAULT_SETTINGS: TreadmillSettings = {
   speedStep: 0.5,
   restoreSpeed: false,
   lastSpeed: 0,
+  bodyWeight: 75,
 };
 
 function getStoredSettings(): TreadmillSettings {
@@ -61,6 +63,9 @@ export function useTreadmillSettings() {
 
     // Ensure min is not greater than max
     if (next.minSpeed > next.maxSpeed) next.minSpeed = next.maxSpeed;
+
+    if (next.bodyWeight < 20) next.bodyWeight = 20;
+    if (next.bodyWeight > 300) next.bodyWeight = 300;
 
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
     window.dispatchEvent(new Event(SETTINGS_EVENT));

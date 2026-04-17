@@ -169,7 +169,7 @@ function ConnectedView() {
     setMode,
     setSensitivity,
     resetSession,
-    handleStartStop,
+    startOrStop,
     isStartStopPending,
   } = useWalkingPad();
   const { beltStatus } = stats;
@@ -181,7 +181,6 @@ function ConnectedView() {
 
   const [targetSpeed, setTargetSpeed] = useState(stats.speed);
   const lastCmdTimeRef = useRef(0);
-  const prevBeltStatusRef = useRef(beltStatus);
 
   useEffect(() => {
     if (Date.now() - lastCmdTimeRef.current > 2000) {
@@ -189,21 +188,13 @@ function ConnectedView() {
     }
   }, [stats.speed]);
 
-  // Logic to restore speed
-  useEffect(() => {
-    if (prevBeltStatusRef.current !== "running" && beltStatus === "running") {
-      // Just transitioned to running
-      if (settings.restoreSpeed && settings.lastSpeed > 0) {
-        // We delay slightly to let it settle into running state
-        const timeoutId = setTimeout(() => {
-          void setSpeed(settings.lastSpeed);
-          setTargetSpeed(settings.lastSpeed);
-        }, 1000);
-        return () => clearTimeout(timeoutId);
-      }
+  const handleStartOrStop = () => {
+    if (settings.restoreSpeed && settings.lastSpeed > 0) {
+      startOrStop(settings.lastSpeed);
+    } else {
+      startOrStop();
     }
-    prevBeltStatusRef.current = beltStatus;
-  }, [beltStatus, settings.restoreSpeed, settings.lastSpeed, setSpeed]);
+  };
 
   const handleSpeedDown = () => {
     const next = Math.max(settings.minSpeed, targetSpeed - settings.speedStep);
@@ -307,7 +298,7 @@ function ConnectedView() {
             {/* Start/Stop primary action */}
             <div className="mt-14 flex w-full justify-center lg:mt-24">
               <button
-                onClick={handleStartStop}
+                onClick={handleStartOrStop}
                 disabled={isStartStopPending || isCountdown(beltStatus)}
                 className={cn(
                   "relative flex h-14 w-auto min-w-[200px] transform items-center justify-center overflow-hidden rounded-xl px-8 font-bold tracking-[0.2em] uppercase transition-all duration-700 ease-quart hover:scale-[1.02] focus:ring-2 focus:ring-primary focus:ring-offset-4 focus:ring-offset-background focus:outline-none active:scale-95 lg:h-16 lg:px-12",

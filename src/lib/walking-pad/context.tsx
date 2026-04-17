@@ -35,7 +35,7 @@ type WalkingPadContextValue = {
   setMode: (mode: PadMode) => Promise<void>;
   setSensitivity: (level: AutoSensitivity) => Promise<void>;
   resetSession: () => void;
-  handleStartStop: () => Promise<void>;
+  startOrStop: (startSpeed?: number) => Promise<void>;
   isStartStopPending: boolean;
 };
 
@@ -232,19 +232,31 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
     deviceRef.current?.gatt?.disconnect();
   }, [mode, setMode]);
 
-  const handleStartStop = useCallback(async () => {
-    if (isCountdown(stats.beltStatus)) return;
-    setIsStartStopPending(true);
-    try {
-      if (mode === "standby") {
-        await setMode("manual");
-        await new Promise((r) => setTimeout(r, 1000));
+  const startOrStop = useCallback(
+    async (startSpeed?: number) => {
+      if (isCountdown(stats.beltStatus)) return;
+      setIsStartStopPending(true);
+      try {
+        if (mode === "standby") {
+          await setMode("manual");
+          await new Promise((r) => setTimeout(r, 1000));
+        }
+        if (stats.beltStatus === "running") {
+          await stop();
+        } else {
+          await start();
+          if (startSpeed !== undefined && startSpeed > 0) {
+            // Need a brief delay after start command before setting speed
+            await new Promise((r) => setTimeout(r, 1000));
+            await setSpeed(startSpeed);
+          }
+        }
+      } finally {
+        setIsStartStopPending(false);
       }
-      await (stats.beltStatus === "running" ? stop() : start());
-    } finally {
-      setIsStartStopPending(false);
-    }
-  }, [mode, stats.beltStatus, setMode, start, stop]);
+    },
+    [mode, stats.beltStatus, setMode, start, stop, setSpeed],
+  );
 
   const setSensitivity = useCallback(
     async (level: AutoSensitivity) => {
@@ -280,7 +292,7 @@ export function WalkingPadProvider({ children }: { children: ReactNode }) {
         setMode,
         setSensitivity,
         resetSession,
-        handleStartStop,
+        startOrStop,
         isStartStopPending,
       }}
     >

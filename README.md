@@ -9,8 +9,8 @@ Features:
 - Stats display (Steps, Distance, Time, Calories)
 - Doesn't reset session stats when belt is stopped
 - Weight input for more accurate calorie calculations
+- Overwrite min/max/start speed and speed steps
 - Auto restore last set speed on start if enabled
-- Overwrite min/max speed and speed steps
 - Auto switching to manual mode when starting and no mode is set yet
 - Auto switching to standby mode when disconnecting
 

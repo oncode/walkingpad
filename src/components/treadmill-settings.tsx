@@ -108,6 +108,27 @@ export function TreadmillSettingsMenu() {
 
             <DropdownMenuSeparator className="my-2 bg-white/5" />
 
+            <Input type="text" />
+
+            <div className="grid grid-cols-2 items-center gap-2">
+              <Label htmlFor="start-speed" className="text-xs font-semibold text-muted-foreground">
+                Start Speed
+              </Label>
+              <Input
+                id="start-speed"
+                type="number"
+                min={0}
+                step={0.1}
+                className="h-8 border-white/10 bg-black/20 text-xs"
+                value={settings.startSpeed}
+                disabled={settings.restoreSpeed}
+                onChange={(e) =>
+                  updateSettings({
+                    startSpeed: parseFloat(e.target.value) || DEFAULT_SETTINGS.startSpeed,
+                  })
+                }
+              />
+            </div>
             <div className="flex items-center space-x-2 px-1">
               <Checkbox
                 id="restore-speed"
@@ -119,7 +140,7 @@ export function TreadmillSettingsMenu() {
                 htmlFor="restore-speed"
                 className="text-xs leading-none font-medium text-muted-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Restore last speed on start
+                or restore last speed on start
               </Label>
             </div>
           </div>

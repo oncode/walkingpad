@@ -191,8 +191,8 @@ function ConnectedView() {
   const handleStartOrStop = () => {
     if (settings.restoreSpeed && settings.lastSpeed > 0) {
       startOrStop(settings.lastSpeed);
-    } else {
-      startOrStop();
+    } else if (settings.startSpeed > 0) {
+      startOrStop(settings.startSpeed);
     }
   };
 

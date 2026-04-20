@@ -7,6 +7,7 @@ export interface TreadmillSettings {
   maxSpeed: number;
   minSpeed: number;
   speedStep: number;
+  startSpeed: number;
   restoreSpeed: boolean;
   lastSpeed: number;
   bodyWeight: number;
@@ -16,6 +17,7 @@ export const DEFAULT_SETTINGS: TreadmillSettings = {
   maxSpeed: 6.0,
   minSpeed: 0.5,
   speedStep: 0.5,
+  startSpeed: 0,
   restoreSpeed: false,
   lastSpeed: 0,
   bodyWeight: 75,
@@ -60,6 +62,7 @@ export function useTreadmillSettings() {
     if (next.maxSpeed < 0.1) next.maxSpeed = 0.1;
     if (next.minSpeed < 0) next.minSpeed = 0;
     if (next.speedStep < 0.1) next.speedStep = 0.1;
+    if (next.startSpeed < 0) next.startSpeed = 0;
 
     // Ensure min is not greater than max
     if (next.minSpeed > next.maxSpeed) next.minSpeed = next.maxSpeed;

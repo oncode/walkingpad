@@ -1,4 +1,5 @@
 import { RiSettings3Line } from "@remixicon/react";
+import { useState } from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -12,6 +13,65 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTreadmillSettings, DEFAULT_SETTINGS } from "@/hooks/use-treadmill-settings";
+
+interface SettingsNumberFieldProps {
+  id: string;
+  label: string;
+  value: number;
+  fallback: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  disabled?: boolean;
+  onCommit: (value: number) => void;
+}
+
+function SettingsNumberField({
+  id,
+  label,
+  value,
+  fallback,
+  min,
+  max,
+  step = 0.1,
+  disabled,
+  onCommit,
+}: SettingsNumberFieldProps) {
+  // While the field is focused we render what was typed, so partial input
+  // ("", "3.", "0.") survives instead of being parsed away on every keystroke.
+  const [draft, setDraft] = useState<string | null>(null);
+
+  return (
+    <div className="grid grid-cols-2 items-center gap-2">
+      <Label htmlFor={id} className="text-xs font-semibold text-muted-foreground">
+        {label}
+      </Label>
+      <Input
+        id={id}
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        disabled={disabled}
+        className="h-8 border-white/10 bg-black/20 text-xs"
+        value={draft ?? String(value)}
+        // The menu popup runs typeahead/list navigation on keydown and calls
+        // preventDefault() for every character key, which swallows typing in
+        // nested inputs. Keep our keystrokes from reaching it.
+        onKeyDown={(e) => e.stopPropagation()}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          const parsed = parseFloat(e.target.value);
+          if (!Number.isNaN(parsed)) onCommit(parsed);
+        }}
+        onBlur={() => {
+          if (draft !== null && Number.isNaN(parseFloat(draft))) onCommit(fallback);
+          setDraft(null);
+        }}
+      />
+    </div>
+  );
+}
 
 export function TreadmillSettingsMenu() {
   const [settings, updateSettings] = useTreadmillSettings();
@@ -32,103 +92,52 @@ export function TreadmillSettingsMenu() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-white/5" />
           <div className="flex flex-col gap-4 p-2">
-            <div className="grid grid-cols-2 items-center gap-2">
-              <Label htmlFor="max-speed" className="text-xs font-semibold text-muted-foreground">
-                Max Speed
-              </Label>
-              <Input
-                id="max-speed"
-                type="number"
-                min={0.1}
-                step={0.1}
-                className="h-8 border-white/10 bg-black/20 text-xs"
-                value={settings.maxSpeed}
-                onChange={(e) =>
-                  updateSettings({
-                    maxSpeed: parseFloat(e.target.value) || DEFAULT_SETTINGS.maxSpeed,
-                  })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 items-center gap-2">
-              <Label htmlFor="min-speed" className="text-xs font-semibold text-muted-foreground">
-                Min Speed
-              </Label>
-              <Input
-                id="min-speed"
-                type="number"
-                min={0}
-                step={0.1}
-                className="h-8 border-white/10 bg-black/20 text-xs"
-                value={settings.minSpeed}
-                onChange={(e) =>
-                  updateSettings({
-                    minSpeed: parseFloat(e.target.value) || DEFAULT_SETTINGS.minSpeed,
-                  })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 items-center gap-2">
-              <Label htmlFor="step-speed" className="text-xs font-semibold text-muted-foreground">
-                Step Speed
-              </Label>
-              <Input
-                id="step-speed"
-                type="number"
-                min={0.1}
-                step={0.1}
-                className="h-8 border-white/10 bg-black/20 text-xs"
-                value={settings.speedStep}
-                onChange={(e) =>
-                  updateSettings({
-                    speedStep: parseFloat(e.target.value) || DEFAULT_SETTINGS.speedStep,
-                  })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 items-center gap-2">
-              <Label htmlFor="body-weight" className="text-xs font-semibold text-muted-foreground">
-                Body Weight (kg)
-              </Label>
-              <Input
-                id="body-weight"
-                type="number"
-                min={20}
-                max={300}
-                step={0.5}
-                className="h-8 border-white/10 bg-black/20 text-xs"
-                value={settings.bodyWeight}
-                onChange={(e) =>
-                  updateSettings({
-                    bodyWeight: parseFloat(e.target.value) || DEFAULT_SETTINGS.bodyWeight,
-                  })
-                }
-              />
-            </div>
+            <SettingsNumberField
+              id="max-speed"
+              label="Max Speed"
+              min={0.1}
+              value={settings.maxSpeed}
+              fallback={DEFAULT_SETTINGS.maxSpeed}
+              onCommit={(maxSpeed) => updateSettings({ maxSpeed })}
+            />
+            <SettingsNumberField
+              id="min-speed"
+              label="Min Speed"
+              min={0}
+              value={settings.minSpeed}
+              fallback={DEFAULT_SETTINGS.minSpeed}
+              onCommit={(minSpeed) => updateSettings({ minSpeed })}
+            />
+            <SettingsNumberField
+              id="step-speed"
+              label="Step Speed"
+              min={0.1}
+              value={settings.speedStep}
+              fallback={DEFAULT_SETTINGS.speedStep}
+              onCommit={(speedStep) => updateSettings({ speedStep })}
+            />
+            <SettingsNumberField
+              id="body-weight"
+              label="Body Weight (kg)"
+              min={20}
+              max={300}
+              step={0.5}
+              value={settings.bodyWeight}
+              fallback={DEFAULT_SETTINGS.bodyWeight}
+              onCommit={(bodyWeight) => updateSettings({ bodyWeight })}
+            />
 
             <DropdownMenuSeparator className="my-2 bg-white/5" />
 
-            <Input type="text" />
-
-            <div className="grid grid-cols-2 items-center gap-2">
-              <Label htmlFor="start-speed" className="text-xs font-semibold text-muted-foreground">
-                Start Speed
-              </Label>
-              <Input
-                id="start-speed"
-                type="number"
-                min={0}
-                step={0.1}
-                className="h-8 border-white/10 bg-black/20 text-xs"
-                value={settings.startSpeed}
-                disabled={settings.restoreSpeed}
-                onChange={(e) =>
-                  updateSettings({
-                    startSpeed: parseFloat(e.target.value) || DEFAULT_SETTINGS.startSpeed,
-                  })
-                }
-              />
-            </div>
+            <SettingsNumberField
+              id="start-speed"
+              label="Start Speed"
+              min={0}
+              value={settings.startSpeed}
+              fallback={DEFAULT_SETTINGS.startSpeed}
+              disabled={settings.restoreSpeed}
+              onCommit={(startSpeed) => updateSettings({ startSpeed })}
+            />
             <div className="flex items-center space-x-2 px-1">
               <Checkbox
                 id="restore-speed"

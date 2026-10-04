@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useTreadmillSettings, DEFAULT_SETTINGS } from "@/hooks/use-treadmill-settings";
+import {
+  useTreadmillSettings,
+  DEFAULT_SETTINGS,
+  MIN_START_SPEED,
+} from "@/hooks/use-treadmill-settings";
 
 interface SettingsNumberFieldProps {
   id: string;
@@ -132,7 +136,7 @@ export function TreadmillSettingsMenu() {
             <SettingsNumberField
               id="start-speed"
               label="Start Speed"
-              min={0}
+              min={MIN_START_SPEED}
               value={settings.startSpeed}
               fallback={DEFAULT_SETTINGS.startSpeed}
               disabled={settings.restoreSpeed}

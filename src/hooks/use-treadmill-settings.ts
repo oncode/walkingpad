@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 
 const SETTINGS_KEY = "walkingpad.settings";
 const SETTINGS_EVENT = "walkingpad.settings.updated";
+export const MIN_START_SPEED = 0.1;
 
 export interface TreadmillSettings {
   maxSpeed: number;
@@ -17,7 +18,7 @@ export const DEFAULT_SETTINGS: TreadmillSettings = {
   maxSpeed: 6.0,
   minSpeed: 0.5,
   speedStep: 0.5,
-  startSpeed: 0,
+  startSpeed: 3,
   restoreSpeed: false,
   lastSpeed: 0,
   bodyWeight: 75,
@@ -28,7 +29,10 @@ function getStoredSettings(): TreadmillSettings {
   try {
     const stored = localStorage.getItem(SETTINGS_KEY);
     if (stored) {
-      return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+      const parsed: TreadmillSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+      // Older saves may still hold startSpeed 0, which made start a no-op.
+      if (!(parsed.startSpeed >= MIN_START_SPEED)) parsed.startSpeed = DEFAULT_SETTINGS.startSpeed;
+      return parsed;
     }
   } catch (e) {
     console.error("Failed to parse settings", e);
@@ -62,7 +66,7 @@ export function useTreadmillSettings() {
     if (next.maxSpeed < 0.1) next.maxSpeed = 0.1;
     if (next.minSpeed < 0) next.minSpeed = 0;
     if (next.speedStep < 0.1) next.speedStep = 0.1;
-    if (next.startSpeed < 0) next.startSpeed = 0;
+    if (next.startSpeed < MIN_START_SPEED) next.startSpeed = MIN_START_SPEED;
 
     // Ensure min is not greater than max
     if (next.minSpeed > next.maxSpeed) next.minSpeed = next.maxSpeed;

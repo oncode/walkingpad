@@ -4,6 +4,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { useEffect } from "react";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -50,11 +51,29 @@ export const Route = createRootRouteWithContext<{
 });
 
 function RootComponent() {
+  useServiceWorker();
+
   return (
     <RootDocument>
       <Outlet />
     </RootDocument>
   );
+}
+
+// Production only: in dev, Vite serves unhashed modules that a cache-first worker would pin.
+function useServiceWorker() {
+  useEffect(() => {
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+
+    void navigator.serviceWorker.register("/sw.js").then(async () => {
+      const registration = await navigator.serviceWorker.ready;
+      const urls = performance
+        .getEntriesByType("resource")
+        .map((entry) => entry.name)
+        .concat(location.href);
+      registration.active?.postMessage({ type: "CACHE_URLS", urls });
+    });
+  }, []);
 }
 
 function RootDocument({ children }: { readonly children: React.ReactNode }) {

@@ -1,6 +1,6 @@
 # WalkingPad
 
-Web UI for managing a KingSmith walking pad.
+Web UI for managing a KingSmith walking pad. Live version available at [https://walk.oncode.ch](https://walk.oncode.ch).
 
 ![Screenshot](/docs/screenshots/dashboard.png)
 

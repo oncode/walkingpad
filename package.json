@@ -1,7 +1,7 @@
 {
   "name": "walkingpad",
   "private": true,
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite dev",

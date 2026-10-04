@@ -2,7 +2,9 @@
 
 Web UI for managing a KingSmith walking pad.
 
-Features:
+![Screenshot](/docs/screenshots/dashboard.png)
+
+## Features:
 
 - Speed control for manual mode
 - Sensitivity control for auto mode
@@ -13,6 +15,7 @@ Features:
 - Auto restore last set speed on start if enabled
 - Auto switching to manual mode when starting and no mode is set yet
 - Auto switching to standby mode when disconnecting
+- Offline usable
 
 ## Development
 
@@ -26,4 +29,4 @@ The development server should now be running at [http://localhost:3000](http://l
 
 ## License
 
-GPL-3.0-or-later
+MIT
